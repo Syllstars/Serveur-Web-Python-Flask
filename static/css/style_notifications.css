@@ -1,0 +1,35 @@
+﻿.home .notification {
+    display: block;
+    margin: 30px 20px 30px 30px;
+}
+
+.home .notification .etiquette-notif,
+.home .notification .etiquette-notif.Classe{
+    background: var(--background-color-classe);
+    width: 100%;
+    border-radius: 10px;
+    border-left: solid 10px var(--primary-color);
+    color : var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.home .notification .etiquette-notif.Général {
+    border-left: solid 10px var(--primary-color-red);
+}
+
+.home .notification .etiquette-notif.Information {
+    border-left: solid 10px var(--primary-color-bleue);
+}
+
+.home .notification .etiquette-notif .Titre {
+    margin-left: 20px;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.home .notification .etiquette-notif .Contenu {
+    margin-left: 20px;
+    margin-bottom: 5px;
+    color: var(--primary-color);
+}
+
