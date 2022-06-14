@@ -9,7 +9,9 @@ Serveur Web développé sous python 3.10 avec le framework Flask et le module de
 
 == Implémentation ==
 
-!!!! WARNING : IF YOU DON'T HAVE THIS PACKAGE THIS APP CAN NOT RUN !!!!!
+!!!! WARNING : IF YOU CAN NOT DOWNLOAD ALL FIL ON MOODLE TAKE THIS LINK ON DOWNLOAD THE PROJECT !!!!!
+On GITHUB : https://github.com/Syllstars/Serveur-Web-Python-Flask.git
+On DRIVE : https://drive.google.com/drive/folders/1rbCkMMAqVY_OlhgYCd64gISIMNx1UL7X?usp=sharing
 
 Check you pip list on a comand prompt.
 Install Package:
