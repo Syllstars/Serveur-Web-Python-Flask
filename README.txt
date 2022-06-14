@@ -52,7 +52,7 @@ WARNING : If you want to access to the database by the web site, you must log in
 		  for this you can check the database or the file admin.py and take the admin account.
 
 +-------------------------------------------------------+
-|		  Server Web for Class C++ creation				|
-|		    Develop on Visual Studio 2019				|
-|	      	   Version 8.0 07/06/2022					|
+|		  Server Web for Class C++ creation	|
+|		    Develop on Visual Studio 2019	|
+|	      	   Version 8.0 07/06/2022		|
 +-------------------------------------------------------+
