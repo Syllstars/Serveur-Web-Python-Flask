@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -113,7 +113,7 @@
         <div class="donnees-users">
             <div class="profil">
                 <div class="image-profil">
-                    <img src="{{ url_for('static', filename = 'image/profile.jpg') }}" alt="">
+                    <img src="data:image/jpg;charset=ut-8;base64,{{ image_profil }}" alt="">
                 </div>
                 <div class="donnees-profil">
                     <div class="nom">
@@ -153,7 +153,14 @@
                     </div>
                     <br /><br/>
                     <div class="form-changer-donner">
-                        <h1>Changement des données utilisateurs</h1>
+                        <h1>Changement des données utilisateurs</h1>                  
+                        <select name="value-to-change" id="value-select">
+                            <option value="">--Please choose an option--</option>
+                            <option value="name">Name</option>
+                            <option value="mail">E-Mail</option>
+                            <option value="password">Password</option>
+                            <option value="image">Profil Image</option>
+                        </select>
                         <br />
                         <div>
                             <form class="changename" method="POST" action="replacename/{{ idUser }}">
@@ -162,27 +169,42 @@
                                     Changer votre nom d'utilisateur : 
                                     <br />
                                     {{ form_user.name(type="text", required="", class="texte", placeholder="New Name") }}
+                                    <br />
+                                    {{ form_user.recaptcha }}
                                     {{ form_user.submit(class="button", type="submit", value="Envoyer")}}
                                 </p>
                             </form>
-                            <br />
-                            <form class="changename" method="POST" action="replacemail/{{ idUser }}">
+                            <form class="changemail" method="POST" action="replacemail/{{ idUser }}">
                                 {{ form_mail.hidden_tag() }}
                                 <p>
                                     Changer votre e-mail : 
                                     <br />
                                     {{ form_mail.name(type="text", required="", class="texte", placeholder="New E-Mail") }}
+                                    <br />
+                                    {{ form_mail.recaptcha }}
                                     {{ form_mail.submit(class="button", type="submit", value="Envoyer")}}
                                 </p>
                             </form>
-                            <br />
-                            <form class="changename" method="POST" action="replacepassword/{{ idUser }}">
+                            <form class="changepassword" method="POST" action="replacepassword/{{ idUser }}">
                                 {{ form_pwd.hidden_tag() }}
                                 <p>
                                     Changer votre mot de passe : 
                                     <br />
                                     {{ form_pwd.name(type="text", required="", class="texte", placeholder="New Password") }}
+                                    <br />
+                                    {{ form_pwd.recaptcha }}
                                     {{ form_pwd.submit(class="button", type="submit", value="Envoyer")}}
+                                </p>
+                            </form>
+                            <form class="changeimage" method="POST" enctype="multipart/form-data" action="replaceimage/{{ idUser }}">
+                                {{ form_img.hidden_tag() }}
+                                <p>
+                                    Changer votre Photo de profil : 
+                                    <br />
+                                    {{ form_img.Image(type="file", required="", class="texte", placeholder="New Profil Image") }}
+                                    <br />
+                                    {{ form_img.recaptcha }}
+                                    {{ form_img.submit(class="button", type="submit", value="Envoyer")}}
                                 </p>
                             </form>
                         </div>
@@ -314,6 +336,46 @@
                 modeText.innerText = "Dark mode";
 
             }
-        });</script>
+        });
+        
+        let modifieur = document.querySelector('select'),
+            zone_name = document.querySelector(".changename"),
+            zone_mail = document.querySelector(".changemail"),
+            zone_pwd = document.querySelector(".changepassword"),
+            zone_img = document.querySelector(".changeimage");
+
+        modifieur.addEventListener('change', function () {
+            if (this.value == '') {
+                zone_name.classList.remove("open")
+                zone_mail.classList.remove("open")
+                zone_pwd.classList.remove("open")
+                zone_img.classList.remove("open")
+            }
+            if (this.value == 'name') {
+                zone_name.classList.add("open")
+                zone_mail.classList.remove("open")
+                zone_pwd.classList.remove("open")
+                zone_img.classList.remove("open")
+            }
+            if (this.value == 'mail') {
+                zone_name.classList.remove("open")
+                zone_mail.classList.add("open")
+                zone_pwd.classList.remove("open")
+                zone_img.classList.remove("open")
+            }
+            if (this.value == 'password') {
+                zone_name.classList.remove("open")
+                zone_pwd.classList.add("open")
+                zone_mail.classList.remove("open")
+                zone_img.classList.remove("open")
+            }
+            if (this.value == 'image') {               
+                zone_name.classList.remove("open")
+                zone_pwd.classList.remove("open")
+                zone_img.classList.remove("open")
+                zone_img.classList.add("open")
+            }
+        })
+        </script>
 </body>
 </html>
