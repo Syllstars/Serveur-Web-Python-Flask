@@ -2,9 +2,9 @@
 Serveur Web développé sous python 3.10 avec le framework Flask et le module de databaser sqlite3
 
 +-------------------------------------------------------+
-|			        MMOGC -- Générateur de classe				      |
-|				           Application Flask					        	|
-|	      	        by PONTLEVOY Maxime					        	|
+|		MMOGC -- Générateur de classe		|
+|		     Application Flask			|
+|	      	    by PONTLEVOY Maxime			|
 +-------------------------------------------------------+
 
 == Implémentation ==
