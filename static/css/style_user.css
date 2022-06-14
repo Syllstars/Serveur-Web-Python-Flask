@@ -1,4 +1,4 @@
-﻿.home .en-tete {
+.home .en-tete {
     display: block;
     margin: 30px 20px 50px 30px;
     height: 100px;
@@ -113,4 +113,34 @@
 
 .home .donnees-users .profil .donnees-profil .form-changer-donner form .button {
 
+}
+
+.home .donnees-users .profil .donnees-profil .form-changer-donner .changename,
+.home .donnees-users .profil .donnees-profil .form-changer-donner .changemail,
+.home .donnees-users .profil .donnees-profil .form-changer-donner .changepassword,
+.home .donnees-users .profil .donnees-profil .form-changer-donner .changeimage {
+    display: none;
+}
+
+.home .donnees-users .profil .donnees-profil .form-changer-donner .changename.open {
+    display: block;
+}
+
+.home .donnees-users .profil .donnees-profil .form-changer-donner .changemail.open {
+    display: block;
+}
+
+.home .donnees-users .profil .donnees-profil .form-changer-donner .changepassword.open {
+    display: block;
+}
+
+.home .donnees-users .profil .donnees-profil .form-changer-donner .changeimage.open {
+    display: block;
+}
+
+.home .donnees-users .profil .donnees-profil .form-changer-donner #value-select {
+    box-shadow: 4px 4px #ccc;
+    border-radius: 5px;
+    background-color: var(--toggle-color);
+    color: var(--primary-color);
 }
