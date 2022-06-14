@@ -25,6 +25,7 @@ email-validator 1.1.3
 Flask           2.0.3
 Flask-Mail      0.9.1
 Flask-WTF       1.0.0
+Flask-ReCaptcha 0.4.2
 flask_sqlachemy 4.1.1
 idna            3.3
 itsdangerous    2.1.1
