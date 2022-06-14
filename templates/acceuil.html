@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<!-- Coding by CodingLab | www.codinglabweb.com -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!----======== CSS ======== -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_Dashboard_Classe.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_sidebar.css') }}" />
+
+
+    <!----===== Boxicons CSS ===== -->
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+
+    <!--<title>Dashboard Sidebar Menu</title>-->
+    <title>MMOGC -- Générateur de classe</title>
+</head>
+
+<body>
+    
+    <nav class="sidebar close">
+        <header>
+            <div class="image-text">
+                <span class="image">
+                    <img src="{{ url_for('static', filename = 'image/logo.png') }}" alt="">
+                </span>
+
+                <div class="text logo-text">
+                    <span class="name">MMOGC</span>
+                    <span class="profession">Class Generator</span>
+                </div>
+            </div>
+
+            <i class='bx bx-chevron-right toggle'></i>
+        </header>
+
+        <div class="menu-bar">
+            <div class="menu">
+
+
+                <ul class="menu-links">
+                    <li class="nav-link">
+                        <a href="acceuil">
+                            <i class='bx bx-home-alt icon'></i>
+                            <span class="text nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="generateur">
+                            <i class='bx bx-pie-chart-alt icon'></i>
+                            <span class="text nav-text">Générateur</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-link">
+                        <a href="boutique">
+                            <i class='bx bx-wallet icon'></i>
+                            <span class="text nav-text">Boutiques</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="bottom-content">
+                <li class="nav-link">
+                    <a href="user">
+                        <i class='bx bx-user icon'></i>
+                        <span class="text nav-text">User</span>
+                    </a>
+                </li>
+                <li class="nav-link">
+                    <a href="notification">
+                        <i class='bx bx-bell icon'></i>
+                        <span class="text nav-text">Notifications</span>
+                    </a>
+                </li>
+                {% if idGroup == 10 %}
+                <li class="nav-link">
+                    <a href="gestiondata">
+                        <i class='bx bx-data icon'></i>
+                        <span class="text nav-text">DataBase</span>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="">
+                    <a href="/logout">
+                        <i class='bx bx-log-out icon'></i>
+                        <span class="text nav-text">Logout</span>
+                    </a>
+                </li>
+
+                <li class="mode">
+                    <div class="sun-moon">
+                        <i class='bx bx-moon icon moon'></i>
+                        <i class='bx bx-sun icon sun'></i>
+                    </div>
+                    <span class="mode-text text">Dark mode</span>
+
+                    <div class="toggle-switch">
+                        <span class="switch"></span>
+                    </div>
+                </li>
+
+            </div>
+        </div>
+
+    </nav>
+
+    <section class="home">
+        <div class="liste-classe">
+            <div class="bandeau">
+                <h1>Liste de vos classes générer a partir du générateur</h1>
+            </div>
+
+            <div class="zone-classe">
+                <!--Zone à récupérer-->
+                {% for row in classe_liste %}
+                <div class="bandelette">
+                    <div class="multi-zone">
+                        <div class="partie-principale">
+                            <div class="nom">
+                                {{ row[1] }} ({{ row[2] }})
+                            </div>
+                            <div class="options">
+                                <div>
+                                    {% if row[3] == 1 %}
+                                    <input type="checkbox" disabled checked />
+                                    {% else %}
+                                    <input type="checkbox" disabled />
+                                    {% endif %}
+
+                                    : Protéger le header contre les inclusion multiples
+                                </div>
+                                <div>
+                                    {% if row[4] == 1 %}
+                                    <input type="checkbox" disabled checked />
+                                    {% else %}
+                                    <input type="checkbox" disabled />
+                                    {% endif %}
+
+                                    : Générer un constructeur par défaut
+                                </div>
+                                <div>
+                                    {% if row[5] == 1 %}
+                                    <input type="checkbox" disabled checked />
+                                    {% else %}
+                                    <input type="checkbox" disabled />
+                                    {% endif %}
+
+                                    : Générer un déstructeur
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="commentaire">
+                            <div class="data">
+                                <div class="auteur">
+                                    {{ row[6] }}
+                                </div>
+                                <div class="date">
+                                    {{ row[7] }}
+                                </div>
+                            </div>
+                            <div class="texte">
+                                {{ row[8] }}
+                            </div>
+                        </div>
+
+                        <div class="bouton-modif">
+                            <div class="modif">
+                                <input class="button" type="button" value="Modification"
+                                    onclick="window.location.href = 'modification/{{ row[0] }}'" />
+                            </div>
+                            <div class="supprimer">
+                                <input class="button" type="button" value="Supprimer"
+                                    onclick="window.location.href = 'supprimer/{{ row[0] }}'" />
+                            </div>
+                            <div class="type-generation">
+                                <div class="fichier-h">
+                                    <input class="button" type="button" value="Générer .HPP"
+                                        onclick="window.location.href = 'genererh/{{ row[0] }}'" />
+                                </div>
+                                <div class="fichier-cpp">
+                                    <input class="button" type="button" value="Générer .CPP"
+                                        onclick="window.location.href = 'generercpp/{{ row[0] }}'" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const body = document.querySelector('body'),
+            sidebar = body.querySelector('nav'),
+            toggle = body.querySelector(".toggle"),
+            searchBtn = body.querySelector(".search-box"),
+            modeSwitch = body.querySelector(".toggle-switch"),
+            modeText = body.querySelector(".mode-text");
+
+
+        toggle.addEventListener("click", () => {
+            sidebar.classList.toggle("close");
+        })
+
+        modeSwitch.addEventListener("click", () => {
+            body.classList.toggle("dark");
+
+            if (body.classList.contains("dark")) {
+                modeText.innerText = "Light mode";
+            } else {
+                modeText.innerText = "Dark mode";
+
+            }
+        });
+    </script>
+
+</body>
+
+</html>

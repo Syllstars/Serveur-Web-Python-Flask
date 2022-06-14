@@ -1,0 +1,347 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!----======== CSS ======== -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_GestionData.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_sidebar.css') }}" />
+
+
+    <!----===== Boxicons CSS ===== -->
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+
+    <!--<title>Dashboard Sidebar Menu</title>-->
+    <title>MMOGC -- Générateur de classe</title>
+</head>
+<body>
+    <nav class="sidebar close">
+        <header>
+            <div class="image-text">
+                <span class="image">
+                    <img src="{{ url_for('static', filename = 'image/logo.png') }}" alt="">
+                </span>
+
+                <div class="text logo-text">
+                    <span class="name">MMOGC</span>
+                    <span class="profession">Class Generator</span>
+                </div>
+            </div>
+
+            <i class='bx bx-chevron-right toggle'></i>
+        </header>
+
+        <div class="menu-bar">
+            <div class="menu">
+
+
+                <ul class="menu-links">
+                    <li class="nav-link">
+                        <a href="acceuil">
+                            <i class='bx bx-home-alt icon'></i>
+                            <span class="text nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="generateur">
+                            <i class='bx bx-pie-chart-alt icon'></i>
+                            <span class="text nav-text">Générateur</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-link">
+                        <a href="boutique">
+                            <i class='bx bx-wallet icon'></i>
+                            <span class="text nav-text">Boutiques</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="bottom-content">
+                <li class="nav-link">
+                    <a href="user">
+                        <i class='bx bx-user icon'></i>
+                        <span class="text nav-text">User</span>
+                    </a>
+                </li>
+                <li class="nav-link">
+                    <a href="notification">
+                        <i class='bx bx-bell icon'></i>
+                        <span class="text nav-text">Notifications</span>
+                    </a>
+                </li>
+                {% if idGroup == 10 %}
+                <li class="nav-link">
+                    <a href="gestiondata">
+                        <i class='bx bx-data icon'></i>
+                        <span class="text nav-text">DataBase</span>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="">
+                    <a href="/logout">
+                        <i class='bx bx-log-out icon'></i>
+                        <span class="text nav-text">Logout</span>
+                    </a>
+                </li>
+
+                <li class="mode">
+                    <div class="sun-moon">
+                        <i class='bx bx-moon icon moon'></i>
+                        <i class='bx bx-sun icon sun'></i>
+                    </div>
+                    <span class="mode-text text">Dark mode</span>
+
+                    <div class="toggle-switch">
+                        <span class="switch"></span>
+                    </div>
+                </li>
+
+            </div>
+        </div>
+
+    </nav>
+
+    <section class="home">
+        <div class="liste-classe">
+            <div class="bandeau">
+                <h1>Liste des données de la basede données</h1>
+            </div>
+            <div class="donnees-site">
+                <p class="texte"> La moyenne du nombre de classe par utilisateur sur le site est de : </p> 
+                <p class="donnees"> <b>{{ moyenne_classe_all_user[0][0] }}</b> classes/utilisateurs </p>
+                <div class="user-mode-account">
+                    Nombre d'utilisateur par type de compte:
+                    <div class="type-de-compte">
+                        Basic : {{ nombre_type_compte[0][1]}}
+                        <br />
+                        Classic : {{ nombre_type_compte[1][1]}}
+                        <br />
+                        Premium : {{ nombre_type_compte[2][1]}}
+                    </div>
+                </div>
+            </div>
+            <div class="donnees">   
+                <div class="classe">
+                    <div class="affichage-classe">
+                        {% for row in allclasse %}
+                        <div class="une-classe">
+                            <div class="multi-zone">
+                                <div class="partie-principale">
+                                    <div class="nom">
+                                        {{ row[1] }} ({{ row[2] }})
+                                    </div>
+                                    <div class="options">
+                                        <div>
+                                            {% if row[3] == 1 %}
+                                            <input type="checkbox" disabled checked />
+                                            {% else %}
+                                            <input type="checkbox" disabled />
+                                            {% endif %}
+
+                                            : Protéger le header contre les inclusion multiples
+                                        </div>
+                                        <div>
+                                            {% if row[4] == 1 %}
+                                            <input type="checkbox" disabled checked />
+                                            {% else %}
+                                            <input type="checkbox" disabled />
+                                            {% endif %}
+
+                                            : Générer un constructeur par défaut
+                                        </div>
+                                        <div>
+                                            {% if row[5] == 1 %}
+                                            <input type="checkbox" disabled checked />
+                                            {% else %}
+                                            <input type="checkbox" disabled />
+                                            {% endif %}
+
+                                            : Générer un déstructeur
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="commentaire">
+                                    <div class="data">
+                                        <div class="auteur">
+                                            {{ row[6] }}
+                                        </div>
+                                        <div class="date">
+                                            {{ row[7] }}
+                                        </div>
+                                    </div>
+                                    <div class="texte">
+                                        {{ row[8] }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="user">
+                    <div class="affichage-user">
+                        {% for row in alluser %}
+                        <div class="un-user">
+                            <div class="multi-zone">
+                                <div class="donnee-général">
+                                    <div class="name">
+                                        {{ row[1] }}
+                                    </div>
+                                    <div class="email">
+                                        email : {{ row[2] }}
+                                    </div>
+                                    <div class="password">
+                                        password : {{ row[3] }}
+                                    </div>
+                                </div>
+                                <div class="donnees-auxiliaire">
+                                    <div class="vip-account">
+                                        {% if row[4] == 1 or row[4] == 2 %}
+                                        <input type="checkbox" disabled checked />
+                                        {% else %}
+                                        <input type="checkbox" disabled />
+                                        {% endif %}
+
+                                        : Classic Account
+                                        <br />
+                                        {% if row[4] == 2 %}
+                                        <input type="checkbox" disabled checked />
+                                        {% else %}
+                                        <input type="checkbox" disabled />
+                                        {% endif %}
+
+                                        : Premium Account
+                                    </div>
+                                    <div class="donnees-classe">
+                                        Nombre de classe réalisé : {{ row[5] }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="supprimer">
+                                <input class="button" type="button" value="Supprimer"
+                                       onclick="window.location.href = 'supprimeruser/{{ row[0] }}'" />
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <table class="all-classe-to-user">
+            <thead>
+                <td>Utilisateur</td>
+                <td>Nom</td>
+                <td>Classe mère</td>
+                <td>Protéger le header contre les inclusion multiples</td>
+                <td>Générer un contructeur par defaut</td>
+                <td>Générer un destructeur</td>
+                <td>auteur</td>
+                <td>Date de Création</td>
+            </thead>
+            <tbody>
+                {% for row in all_classe_to_user %}
+                <tr>
+                    <td>
+                        {{ row[1] }}
+                    </td>
+
+                    <td>
+                        {{ row[9] }}
+                    </td>
+                    <td>
+                        {{ row[10] }}
+                    </td>
+
+                    {% if row[11] == 1 %}
+                    <td>
+                        OUI
+                    </td>
+                    {% else %}
+                    <td>
+                        NON
+                    </td>
+                    {% endif %}
+
+                    {% if row[12] == 1 %}
+                    <td>
+                        OUI
+                    </td>
+                    {% else %}
+                    <td>
+                        NON
+                    </td>
+                    {% endif %}                 
+                    
+                    {% if row[13] == 1 %}
+                    <td>
+                        OUI
+                    </td>
+                    {% else %}
+                    <td>
+                        NON
+                    </td>
+                    {% endif %}
+
+                    <td>
+                        {{ row[14] }}
+                    </td>
+                    <td>
+                        {{ row[15] }}
+                    </td>
+                </tr>
+                {% endfor %}
+            <tbody>
+        </table>
+        <br />
+        <table class="all-notif-to-user">
+            <thead>
+                <tr>
+                    <td>Utilisateur</td>
+                    <td>Type de Notification</td>
+                    <td>commentaire</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in all_notif_to_user %}
+                <tr>
+                    <td> {{ row[1] }}</td>
+                    <td> {{ row[9] }}</td>
+                    <td> {{ row[10] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <script>
+    const body = document.querySelector('body'),
+            sidebar = body.querySelector('nav'),
+            toggle = body.querySelector(".toggle"),
+            searchBtn = body.querySelector(".search-box"),
+            modeSwitch = body.querySelector(".toggle-switch"),
+            modeText = body.querySelector(".mode-text");
+
+
+        toggle.addEventListener("click", () => {
+            sidebar.classList.toggle("close");
+        })
+
+        modeSwitch.addEventListener("click", () => {
+            body.classList.toggle("dark");
+
+            if (body.classList.contains("dark")) {
+                modeText.innerText = "Light mode";
+            } else {
+                modeText.innerText = "Dark mode";
+
+            }
+        });</script>
+</body>
+</html>

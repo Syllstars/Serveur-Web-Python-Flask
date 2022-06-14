@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!----===== Boxicons CSS ===== -->
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet' />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" rel="stylesheet" />
+
+    <!----======== CSS ======== -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_payement.css') }}" />
+
+
+    <!--<title>Dashboard Sidebar Menu</title>-->
+    <title>MMOGC -- Générateur de classe</title>
+</head>
+<body>
+    <div class="container p-0">
+        <div class="card px-4">
+            <p class="h8 py-3">Payment Details</p>
+            <form action="/demandepayement/{{ prix }}" method="POST">
+                <div class="row gx-3">
+                    {{ form_Banking.hidden_tag() }}
+                    <div class="col-12">
+                        <div class="d-flex flex-column">
+                            <p class="text mb-1">Nom Personne</p> 
+                            {{ form_Banking.name(class="form-control mb-3", type="text",placeholder="Name", value="", required="")}}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex flex-column">
+                            <p class="text mb-1">Numéro de la carte</p> 
+                            {{ form_Banking.numbercard(class="form-control mb-3", type="text", placeholder="Card Number", required="")}}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex flex-column">
+                            <p class="text mb-1">Date d'expiration</p> 
+                            {{ form_Banking.expirationdate(class="form-control mb-3", type="text", placeholder="MM/YYYY", required="")}}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex flex-column">
+                            <p class="text mb-1">Cryptogramme visuel</p> 
+                        {{ form_Banking.visualcryptogram(class="form-control mb-3 pt-2 ", type="password", placeholder="***", required="")}}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="btn btn-primary mb-3"> 
+                            <span class="ps-3">Payer l'abonnement de <b>{{ prix }} €</b></span> 
+                            {{ form_Banking.submit(class="fas fa-arrow-right")}}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
