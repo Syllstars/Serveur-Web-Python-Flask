@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import StringField, EmailField, PasswordField, SubmitField, BooleanField, DateField
 from wtforms.validators import DataRequired, Email, Length, ValidationError
+from flask_wtf.recaptcha import RecaptchaField
 
 class RegisterForm(FlaskForm):
     email = EmailField('Email', validators = [DataRequired(), Email()])
@@ -62,4 +64,9 @@ class FormChangUserEmail(FlaskForm):
 
 class FormChangUserPassword(FlaskForm):
     name = StringField('New Password', validators = [DataRequired()])
+    submit = SubmitField("Envoyer")
+
+class FormChangUserProfilImg(FlaskForm):
+    Image = FileField('New Image profil', validators = [FileRequired(), FileAllowed(['jpg', 'png'], 'Images only!')])
+    recaptcha = RecaptchaField()
     submit = SubmitField("Envoyer")
