@@ -14,6 +14,7 @@ MarkupSafe
 pip      
 pytz    
 SQLAlchemy 
+Flask-ReCaptcha
 Werkzeug  
 wheel    
 wtf     
