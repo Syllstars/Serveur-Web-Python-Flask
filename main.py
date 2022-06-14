@@ -19,6 +19,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 
 import sqlite3 as sql
+import base64
+import os
+import sys
 
 from datetime import datetime
 
@@ -255,20 +258,31 @@ def user():
     myclasse = cursor.fetchall()
     cursor.execute("""DROP VIEW IF EXISTS MaClasse""")
     cursor.execute("CREATE VIEW MaClasse AS SELECT * from classe WHERE classe.idUser=" + str(session['user']['idUser']))
+
     # Faire la requête pour donner la date de la dernière classe créer et de la première classe créer
     cursor.execute("""DROP VIEW IF EXISTS lastClasse""")
     cursor.execute("CREATE VIEW lastClasse AS SELECT name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, MAX(creation_data), class_role FROM MaClasse")
     cursor.execute("""SELECT name, classe_mere, Protect_head, Generat_head_default_construct, 
         Generat_head_destruct, auteur, MAX(creation_data), class_role FROM MaClasse""")
     dernière_classe = cursor.fetchall()
+
     cursor.execute("""DROP VIEW IF EXISTS firstClasse""")
     cursor.execute("CREATE VIEW firstClasse AS SELECT name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, MIN(creation_data), class_role FROM MaClasse")
     cursor.execute("""SELECT name, classe_mere, Protect_head, Generat_head_default_construct, 
         Generat_head_destruct, auteur, MIN(creation_data), class_role FROM MaClasse""")
     première_classe = cursor.fetchall()
+
     cursor.execute("""SELECT * from user 
-        Where user.idUsers =?""",(session['user']['idUser'],))
+        WHERE user.idUsers =?""",(session['user']['idUser'],))
     profil = cursor.fetchall()
+
+    #Récupération de l'image de profil de l'utilisateur
+    cursor.execute("""SELECT image_profil from user
+        WHERE user.idUsers =?""",(session['user']['idUser'],))
+    img = cursor.fetchall()
+    print(img)
+    image  = base64.b64encode(img[0][0])
+    data = image.decode("UTF-8")
     #faire la requete pour savoir le nombre de classe faire au total
     #Donner le nombre classe possible que l'utilisateur peut créer
     conn.commit()
@@ -277,7 +291,7 @@ def user():
                            firts_classe = première_classe,
                            last_classe = dernière_classe,
                            myclasse = myclasse, 
-                           profil = profil, 
+                           profil = profil, image_profil = data,
                            form_user = form_User_name, form_mail = form_User_mail, 
                            form_pwd = form_User_password, form_img = form_User_profil_img,
                            idGroup = session['user']['idGroup'], idUser = session['user']['idUser'])
@@ -294,10 +308,12 @@ def replacename(idUser):
     cursor = conn.cursor()
     #Récupération du nouveau nom données par l'utilisateur
     name = form_User_name.name.data
+
     #Envoye du nom dans la DataBase
     conn.execute("""UPDATE user 
         SET name=? WHERE user.idUsers=?""", (name, idUser))
     conn.commit()
+
     #Fermeture de la connexion a la DataBase
     conn.close()
     return redirect(url_for('user'))
@@ -354,11 +370,12 @@ def replaceimage(idUser):
     cursor = conn.cursor()
     #Récupération de la nouvelle image par l'utilisateur
 
-    image = form_User_profil_img.Image.data
+    pic = request.files['Image']
+    image = pic.read()
 
     #Envoye de l'image de profil dans la database
     conn.execute("""UPDATE user
-        SET image_profil=? WHERE user.idUsers=?""", (image,idUser))
+        SET image_profil=? WHERE user.idUsers=?""", (image, idUser))
     conn.commit()
     #Fermeture de la connexion à la database
     conn.close()
