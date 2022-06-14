@@ -9,7 +9,7 @@ from flask.cli import with_appcontext
 
 from forms import RegisterForm, NewLoginForm, NewClassGenerator
 from forms import ForgottenPassword, ModifierClassGenerator, FormDataBanking
-from forms import FormChangUserName, FormChangUserEmail , FormChangUserPassword
+from forms import FormChangUserName, FormChangUserEmail , FormChangUserPassword, FormChangUserProfilImg
 from config import Config
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -27,6 +27,12 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 app.config['SECRET_KEY'] = b'_\xd0\xe3`\x90nI\x0f`5?\x0b\xca\\\x14\xb8'
+
+app.config['RECAPTCHA_PUBLIC_KEY'] = '6Leo12sgAAAAAHp16Z2E4Vl7V58_1obEI_jCNLDT'
+app.config['RECAPTCHA_PRIVATE_KEY'] = '6Leo12sgAAAAABV0BZlccst1gsHepAiWWknAsqyr'
+app.config['RECAPTCHA_OPTION'] = {
+    'theme': 'custom'
+}
 
 db_name = 'database.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
@@ -225,7 +231,6 @@ def forgotten_password():
         cursor.execute("""SELECT * from user""")
         #Fermeture de la database
         conn.close()
-
     return render_template("changpassword.html", 
                             form_forgottenpassword = form_password)
 
@@ -240,45 +245,41 @@ def user():
     form_User_name = FormChangUserName()
     form_User_mail = FormChangUserEmail()
     form_User_password = FormChangUserPassword()
+    form_User_profil_img = FormChangUserProfilImg()
     #connexion à la DataBase
     conn = sql.connect('database.db')
     cursor = conn.cursor()
-
     #Récupération de toute les classes faites par l'utilisateur
     cursor.execute("""SELECT * from classe
         WHERE classe.idUser=?""",(session['user']['idUser'],))
     myclasse = cursor.fetchall()
     cursor.execute("""DROP VIEW IF EXISTS MaClasse""")
     cursor.execute("CREATE VIEW MaClasse AS SELECT * from classe WHERE classe.idUser=" + str(session['user']['idUser']))
-
     # Faire la requête pour donner la date de la dernière classe créer et de la première classe créer
     cursor.execute("""DROP VIEW IF EXISTS lastClasse""")
     cursor.execute("CREATE VIEW lastClasse AS SELECT name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, MAX(creation_data), class_role FROM MaClasse")
     cursor.execute("""SELECT name, classe_mere, Protect_head, Generat_head_default_construct, 
         Generat_head_destruct, auteur, MAX(creation_data), class_role FROM MaClasse""")
     dernière_classe = cursor.fetchall()
-
     cursor.execute("""DROP VIEW IF EXISTS firstClasse""")
     cursor.execute("CREATE VIEW firstClasse AS SELECT name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, MIN(creation_data), class_role FROM MaClasse")
     cursor.execute("""SELECT name, classe_mere, Protect_head, Generat_head_default_construct, 
         Generat_head_destruct, auteur, MIN(creation_data), class_role FROM MaClasse""")
     première_classe = cursor.fetchall()
-
     cursor.execute("""SELECT * from user 
         Where user.idUsers =?""",(session['user']['idUser'],))
     profil = cursor.fetchall()
-
     #faire la requete pour savoir le nombre de classe faire au total
     #Donner le nombre classe possible que l'utilisateur peut créer
     conn.commit()
     conn.close()
-
     return render_template('user.html',
                            firts_classe = première_classe,
                            last_classe = dernière_classe,
                            myclasse = myclasse, 
                            profil = profil, 
-                           form_user = form_User_name, form_mail = form_User_mail, form_pwd = form_User_password,
+                           form_user = form_User_name, form_mail = form_User_mail, 
+                           form_pwd = form_User_password, form_img = form_User_profil_img,
                            idGroup = session['user']['idGroup'], idUser = session['user']['idUser'])
 
 @app.route('/replacename/<int:idUser>', methods=['get', 'post'])
@@ -287,13 +288,12 @@ def replacename(idUser):
     form_User_name = FormChangUserName()
     form_User_mail = FormChangUserEmail()
     form_User_password = FormChangUserPassword()
+    form_User_profil_img = FormChangUserProfilImg()
     #Connexion à la DataBase
     conn = sql.connect('database.db')
     cursor = conn.cursor()
     #Récupération du nouveau nom données par l'utilisateur
-
     name = form_User_name.name.data
-
     #Envoye du nom dans la DataBase
     conn.execute("""UPDATE user 
         SET name=? WHERE user.idUsers=?""", (name, idUser))
@@ -308,13 +308,12 @@ def replacemail(idUser):
     form_User_name = FormChangUserName()
     form_User_mail = FormChangUserEmail()
     form_User_password = FormChangUserPassword()
+    form_User_profil_img = FormChangUserProfilImg()
     #Connexion à la DataBase
     conn = sql.connect('database.db')
     cursor = conn.cursor()
     #Récupération du nouveau email données par l'utilisateur
-
     email = form_User_mail.name.data
-
     #Envoye de l'email dans la DataBase
     conn.execute("""UPDATE user 
         SET email=? WHERE user.idUsers=?""", (email, idUser))
@@ -329,13 +328,12 @@ def replacepassword(idUser):
     form_User_name = FormChangUserName()
     form_User_mail = FormChangUserEmail()
     form_User_password = FormChangUserPassword()
+    form_User_profil_img = FormChangUserProfilImg()
     #Connexion à la DataBase
     conn = sql.connect('database.db')
     cursor = conn.cursor()
     #Récupération du nouveau nom données par l'utilisateur
-
     password = form_User_password.name.data
-
     #Envoye du password dans la DataBase
     conn.execute("""UPDATE user 
         SET password=? WHERE user.idUsers=?""", (password, idUser))
@@ -344,14 +342,19 @@ def replacepassword(idUser):
     conn.close()
     return redirect(url_for('user'))
 
-@app.route('/replaceiamge/<int:iudUser>', methods=['get','post'])
-def replaceimage(iduser):
+@app.route('/replaceimage/<int:idUser>', methods=['get','post'])
+def replaceimage(idUser):
+    #Formulaire
+    form_User_name = FormChangUserName()
+    form_User_mail = FormChangUserEmail()
+    form_User_password = FormChangUserPassword()
+    form_User_profil_img = FormChangUserProfilImg()
     #Connexion à la database
     conn = sql.connect('database.db')
     cursor = conn.cursor()
     #Récupération de la nouvelle image par l'utilisateur
 
-    image = ""
+    image = form_User_profil_img.Image.data
 
     #Envoye de l'image de profil dans la database
     conn.execute("""UPDATE user
