@@ -1,0 +1,16 @@
+#ifndef Personnage 
+#define Personnage 
+
+#include <string> 
+
+class Personnage 
+{ 
+     public: 
+
+     void exemple(); 
+
+     private: 
+
+     int exemple 
+}; 
+#endif

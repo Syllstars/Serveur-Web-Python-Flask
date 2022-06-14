@@ -1,0 +1,10 @@
+#include "Arch-Démon.hpp" 
+#include <string> 
+#include <iostream> 
+
+using namespace std; 
+
+void Arch-Démon::exemple() 
+{ 
+
+}
