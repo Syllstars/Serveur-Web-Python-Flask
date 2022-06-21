@@ -65,6 +65,21 @@ class user(db.Model):
     password = db.Column(db.Integer)
     vip_account = db.Column(db.Integer)
     nb_classe_Faite = db.Column(db.Integer)
+    image_profil = db.Column(db.LargeBinary)
+    idgroupe = db.Column(db.Integer, db.ForeignKey('groupe.idGroupe'))
+
+    def __repr__(self):
+        return '<User %r>' % self.name
+
+class user_banni(db.Model): 
+    idUsers = db.Column(db.Integer, primary_key=True, unique=True)
+    name = db.Column(db.Text)
+    email = db.Column(db.Text)
+    password = db.Column(db.Integer)
+    vip_account = db.Column(db.Integer)
+    nb_classe_Faite = db.Column(db.Integer)
+    image_profil = db.Column(db.LargeBinary)
+    cause = db.Column(db.Text)
     idgroupe = db.Column(db.Integer, db.ForeignKey('groupe.idGroupe'))
 
     def __repr__(self):
@@ -88,16 +103,45 @@ class classe(db.Model):
     auteur = db.Column(db.Text)
     creation_data = db.Column(db.DateTime)
     class_role = db.Column(db.Text)
-    idUsers = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
 
     def __repr__(self):
         return '<User %r>' % self.name
+
+
+class classemodel(db.Model):
+    idClasse = db.Column(db.Integer, primary_key=True, unique=True)
+    name = db.Column(db.Text)
+    classe_mere = db.Column(db.Text)
+    Protect_head = db.Column(db.Integer)
+    Generat_head_default_construct = db.Column(db.Integer)
+    Generat_head_destruct = db.Column(db.Integer)
+    auteur = db.Column(db.Text)
+    creation_data = db.Column(db.DateTime)
+    class_role = db.Column(db.Text)
+    idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
+
+    def __repr__(self):
+        return '<User %r>' % self.name
+
+class creation_connexion_classmodel_user(db.Model):
+    idTableConnexion = db.Column(db.Integer, primary_key=True, unique=True)
+    idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
+    idClasse = db.Column(db.Integer, db.ForeignKey('classemodel.idClasse'))
+    connexion = db.Column(db.Integer)
+    
+    def __repr__(self):
+        return '<User %r>' % self.idTableConnexion
 
 class notifications(db.Model):
     idNotif = db.Column(db.Integer, primary_key=True, unique=True)
     typeNotif = db.Column(db.Text)
     Commentaire = db.Column(db.Text)
-    idUsers = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
 
     def __repr__(self):
         return '<User %r>' % self.typeNotif
@@ -125,6 +169,14 @@ def validation(name_user, email_user, password_user):
     notif.append(("Général", "La création de votre compte à bien été enregistrer!!!", idClient[0][0]))
     cursor.executemany("""INSERT INTO notifications(typeNotif, Commentaire, idUser)
         VALUES(?, ?, ?)""", notif)
+    cursor.execute("""SELECT COUNT(*) from classemodel""")
+    nbclassemodel = cursor.fetchall()
+    connexion = []
+    #Création de la connexion entre les classe model et le nouvel utilisateur
+    for i in range(nbclassemodel[0][0]):
+        connexion.append((idClient[0][0], i))
+    cursor.executemany("""INSERT INTO connexionclassuser VALUES (?, ?)""", connexion)
+
     #Execution des script dans la database
     conn.commit()
     #Fermeture de la database
@@ -280,7 +332,6 @@ def user():
     cursor.execute("""SELECT image_profil from user
         WHERE user.idUsers =?""",(session['user']['idUser'],))
     img = cursor.fetchall()
-    print(img)
     image  = base64.b64encode(img[0][0])
     data = image.decode("UTF-8")
     #faire la requete pour savoir le nombre de classe faire au total
@@ -592,7 +643,7 @@ def notification():
     cursor.execute("""DROP VIEW IF EXISTS notifclasse""")
     cursor.execute("CREATE VIEW notifclasse AS SELECT * from notifications WHERE notifications.typeNotif =" + (typenotif[0][0]))
     cursor.execute("""SELECT * from notifications 
-        WHERE notifications.typeNotif =?""", (typenotif[0][0],))
+        WHERE notifications.typeNotif =? AND (notifications.idUser =? OR notifications.idUser =0)""", (typenotif[0][0], session['user']['idUser'],))
     notifclasse = cursor.fetchall()
     #Récupération des notifs général
     cursor.execute("""DROP VIEW IF EXISTS notifgene""")
@@ -685,10 +736,24 @@ def generer():
 #Route pour accéder a la page de la Boutique    
 @app.route('/boutique')
 def Boutique():
+    #Connexion à la database
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    #Récupération des classes générer par le serveur
+    cursor.execute("""SELECT * from classemodel""")
+    classe_can_be_like = cursor.fetchall()
+    #Récupération des classes liké par l'utilisateur connecter
+    cursor.execute("""SELECT * FROM connexionclassuser
+        WHERE  iduser =?""", (session['user']['idUser'],))
+    classe_like = cursor.fetchall()
+    #fermeture de la connexion
+    conn.close()
     #Renvoie de la page de la boutique
     return render_template("Boutique.html", 
-    vip_account = session['user']['vip_account'],
-    idGroup = session['user']['idGroup'])
+                            classe_systeme = classe_can_be_like,
+                            classe_like = classe_like,
+                            vip_account = session['user']['vip_account'],
+                            idGroup = session['user']['idGroup'])
 
 #Route pour accéder a la zone de payement
 @app.route('/payement/<float:prix>', methods=['get', 'post'])
@@ -716,6 +781,7 @@ def demandepayement(prix):
         cursor.execute("""UPDATE user SET vip_account = '2' 
             WHERE idusers =?""", (session['user']['idUser'],))
     conn.commit()
+    conn.close()
     #retour vers la page de validation de payement
     return redirect(url_for('validation_payement'))
 
@@ -726,6 +792,40 @@ def validation_payement():
     form_Banking = FormDataBanking()
     #Renvoie de la page de validation du payement
     return render_template("Validation_Payement.html", idGroup = session['user']['idGroup'])
+
+#Route de like de classe
+@app.route('/likeclasse/<int:idClasse>', methods=['get','post'])
+def likeclasse(idClasse):
+    #Connexion à la database
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    #Affectation de la classe like dans la database
+    donnees = []
+    donnees.append((session['user']['idUser'], idClasse))
+    cursor.executemany("""UPDATE connexionclassuser
+        SET connexion = 1
+        WHERE iduser =? and idclasse =?""", donnees)
+    conn.commit()
+    #Fermeture de la database
+    conn.close()
+    return redirect(url_for('Boutique'))
+
+#Route de dislike de classe
+@app.route('/dislikeclasse/<int:idClasse>', methods=['get','post'])
+def dislikeclasse(idClasse):
+    #Connexion à la database
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    #Affectation de la classe like dans la database
+    donnees = []
+    donnees.append((session['user']['idUser'], idClasse))
+    cursor.executemany("""UPDATE connexionclassuser
+        SET connexion = 0
+        WHERE iduser =? and idclasse =?""", donnees)
+    conn.commit()
+    #Fermeture de la database
+    conn.close()
+    return redirect(url_for('Boutique'))
 #-----------------------------------------
 #------Gestion des données sur le site----
 #-----------------------------------------
@@ -741,6 +841,9 @@ def gestiondata():
     #Récupération de tout les utilisateurs ayant validé leur compte sur ce site
     cursor.execute("""SELECT * from user""")
     userrequete = cursor.fetchall()
+    #Récupération de la table des utilisateurs banni
+    cursor.execute("""SELECT * from user_banni""")
+    userbannirequete = cursor.fetchall()
     #Récupération de la moyenne du nombre de classe pour tous les utilisateurs
     cursor.execute("""DROP VIEW IF EXISTS moyenne_classe_all_user""")
     cursor.execute("CREATE VIEW moyenne_classe_all_user AS SELECT AVG(nb_classe_Faite) from user")
@@ -752,27 +855,16 @@ def gestiondata():
     cursor.execute("""SELECT vip_account, COUNT(name) FROM user
         GROUP BY vip_account""")
     nombre_type_compte = cursor.fetchall()
-    #Récupération de tous les utilisateurs avec leur classes créer ou non
-    cursor.execute("""DROP VIEW IF EXISTS all_classe_to_user""")
-    cursor.execute("CREATE VIEW all_classe_to_user AS SELECT * from user LEFT JOIN classe ON user.idusers = classe.iduser")
-    cursor.execute("""SELECT * from user
-        LEFT JOIN classe ON user.idusers = classe.iduser""")
-    all_classe_to_user = cursor.fetchall()   
-    #Récupération de toutes les notification par Utilisateur
-    cursor.execute("""DROP VIEW IF EXISTS all_notif_to_user""")
-    cursor.execute("CREATE VIEW all_notif_to_user AS SELECT * from user LEFT JOIN notifications ON user.idusers = notifications.iduser")
-    cursor.execute("""SELECT * from user
-        LEFT JOIN notifications ON user.idusers = notifications.iduser""")
-    all_notif_to_user = cursor.fetchall()   
+
     #Fermeture de la connexion à la database
     conn.close()
     return render_template("GestionData.html",
                            allclasse = classerequete,
                            alluser = userrequete,
+                           allbanuser = userbannirequete,
                            moyenne_classe_all_user = moyenne_classe_all_user,
                            nombre_type_compte = nombre_type_compte,
-                           all_classe_to_user = all_classe_to_user,
-                           all_notif_to_user = all_notif_to_user,
+                           idUser = session['user']['idUser'],
                            idGroup = session['user']['idGroup'])
 
 @app.route('/supprimeruser/<int:idUser>', methods=['get', 'post'])
@@ -781,10 +873,121 @@ def supprimeruser(idUser):
     conn = sql.connect('database.db')
     cursor = conn.cursor()
     #Suppression de l'utilisateur
-    cursor.execute("""DELETE FROM user WHERE idUsers =?""",(idUser,))
-    #Fermeture de la connexion à la database
+    cursor.execute("""DELETE FROM user WHERE idUsers =?""",(idUser,))  
+    cursor.execute("""DELETE FROM classe WHERE idUser =?""",(idUser,))
+    cursor.execute("""DELETE FROM connexionclassuser  WHERE idUser =?""",(idUser,))
+    cursor.execute("""DELETE FROM notifications WHERE idUser = ?""",(idUser,))
     conn.commit()
+    #Supression des classes lié a l'utilisateurs
+
+    #Fermeture de la connexion à la database
     conn.close()
+    return redirect(url_for('gestiondata'))
+
+@app.route('/banniruser/<int:idUser>', methods=['get','post'])
+def banniruser(idUser):
+    #Connexion à la DataBase
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    #Récupération de toute les données de l'utilsateur a bannir
+    cursor.execute("""SELECT * FROM user 
+        WHERE user.idUsers=?""",(idUser,))
+    user_for_ban = cursor.fetchall()
+    #Déplacement de l'utilisateur dans la table des Utilisateurs bannis du site web
+    cause = "Vous avez été banni pour abus sur ce site"
+    personne_to_ban = []
+    personne_to_ban.append((user_for_ban[0][1], user_for_ban[0][2], user_for_ban[0][3], user_for_ban[0][4], user_for_ban[0][5], user_for_ban[0][6], user_for_ban[0][7], cause))
+    cursor.executemany("""INSERT INTO user_banni(name, email, password, vip_account, nb_classe_Faite, image_profil, idGroupe, cause) 
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", personne_to_ban)
+    #Supprimer l'utilisateur de la table des utilisateurs
+    cursor.execute("""DELETE FROM user WHERE idUsers =?""",(idUser,))
+    #Execution des requêtes émisent
+    conn.commit()
+    #Récupération de l'ID du User pour switch les liaison des classes
+    cursor.execute("""SELECT * from user_banni
+        WHERE user_banni.name=?""", (user_for_ban[0][1],))
+    the_user = cursor.fetchall()
+    cursor.execute("""UPDATE classe
+        SET idUser =0, idUserUnban =?
+        WHERE classe.idUser =?""", (the_user[0][0], idUser,))
+    cursor.execute("""UPDATE connexionclassuser
+        SET idUser =0, idUserUnban =?
+        WHERE connexionclassuser.idUser =?""", (the_user[0][0], idUser,))
+    cursor.execute("""UPDATE notifications
+        SET idUser =0, idUserUnban =?
+        WHERE notifications.idUser =?""", (the_user[0][0], idUser,))
+    conn.commit()
+    #Fermeture de la connexion à  la database
+    conn.close()
+    return redirect(url_for('gestiondata'))
+
+@app.route('/unbanuser/<int:idUser>', methods=['get','post'])
+def unbanuser(idUser):
+    #Connexion à la database
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    #Récupération de la personne a déban
+    cursor.execute("""SELECT * FROM user_banni 
+        WHERE user_banni.idUsers=?""",(idUser,))
+    unbaning_user = cursor.fetchall()
+    #Déplacement de la personne dans la table des utilisateur
+    personne_to_unban = []
+    personne_to_unban.append((unbaning_user[0][1], unbaning_user[0][2], unbaning_user[0][3], unbaning_user[0][4], unbaning_user[0][5], unbaning_user[0][6], unbaning_user[0][8]))
+    cursor.executemany("""INSERT INTO user(name, email, password, vip_account, nb_classe_Faite, image_profil, idGroupe) 
+        VALUES(?, ?, ?, ?, ?, ?, ?)""", personne_to_unban)
+    #Suppression de la personne dans la table des utilisateurs banni
+    cursor.execute("""DELETE FROM user_banni WHERE idUsers =?""",(idUser,))   
+    conn.commit()
+    #Récupération de l'ID du User pour switch les liaison des classes
+    cursor.execute("""SELECT * from user
+        WHERE user.name=?""", (unbaning_user[0][1],))
+    the_ubaning_user = cursor.fetchall()
+    cursor.execute("""UPDATE classe
+        SET idUserUnban =0, idUser =?
+        WHERE classe.idUserUnban =?""", (the_ubaning_user[0][0], idUser,))
+    cursor.execute("""UPDATE connexionclassuser
+        SET idUserUnban =0, idUser =?
+        WHERE connexionclassuser.idUserUnban =?""", (the_ubaning_user[0][0], idUser,))
+    cursor.execute("""UPDATE notifications
+        SET idUserUnban =0, idUser =?
+        WHERE notifications.idUserUnban =?""", (the_ubaning_user[0][0], idUser,))
+    conn.commit()
+    #Fermeture de la connexion  à la database
+    conn.close()
+    return redirect(url_for('gestiondata'))
+
+@app.route('/supprimeruserbanni/<int:idUser>', methods=['get', 'post'])
+def supprimeruserbanni(idUser):
+    #Connexion à la database
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    #Suppression de l'utilisateur
+    cursor.execute("""DELETE FROM user_banni WHERE idUsers =?""",(idUser,))
+    cursor.execute("""DELETE FROM classe WHERE idUserUnban =?""",(idUser,))
+    cursor.execute("""DELETE FROM connexionclassuser  WHERE idUser =?""",(idUser,))
+    cursor.execute("""DELETE FROM notifications WHERE idUser = ?""",(idUser,))
+    conn.commit()
+    #Supression des classes lié a l'utilisateurs
+
+    #Fermeture de la connexion à la database
+    conn.close()
+    return redirect(url_for('gestiondata'))
+
+@app.route('/changergroupe/<int:idUser>/<int:groupe>', methods=['get','post'])
+def changergroupe(idUser, groupe):
+    #Connexion à la database
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    #Canger le groupe de l'utilisateur sélectionner
+    new_group = []
+    new_group.append((groupe, idUser))
+    cursor.executemany("""UPDATE user
+        SET idGroupe =?
+        WHERE user.idUsers =?""", new_group)
+    conn.commit()
+    #Fermeture de la database
+    conn.close()
+    #Retour a la page de gestion Data
     return redirect(url_for('gestiondata'))
 #-----------------------------------------
 #----------Lancement de l'application-----
