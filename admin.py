@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.sql import text
 from datetime import datetime
+from random import *
 import sqlite3 as sql
 
 app = Flask(__name__)
@@ -38,6 +39,20 @@ class user(db.Model):
     def __repr__(self):
         return '<User %r>' % self.name
 
+class user_banni(db.Model): 
+    idUsers = db.Column(db.Integer, primary_key=True, unique=True)
+    name = db.Column(db.Text)
+    email = db.Column(db.Text)
+    password = db.Column(db.Integer)
+    vip_account = db.Column(db.Integer)
+    nb_classe_Faite = db.Column(db.Integer)
+    image_profil = db.Column(db.LargeBinary)
+    cause = db.Column(db.Text)
+    idgroupe = db.Column(db.Integer, db.ForeignKey('groupe.idGroupe'))
+
+    def __repr__(self):
+        return '<User %r>' % self.name
+
 class groupe(db.Model): 
     idGroupe = db.Column(db.Integer, primary_key=True, unique=True)
     name = db.Column(db.Text)
@@ -57,15 +72,44 @@ class classe(db.Model):
     creation_data = db.Column(db.DateTime)
     class_role = db.Column(db.Text)
     idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
 
     def __repr__(self):
         return '<User %r>' % self.name
+
+
+class classemodel(db.Model):
+    idClasse = db.Column(db.Integer, primary_key=True, unique=True)
+    name = db.Column(db.Text)
+    classe_mere = db.Column(db.Text)
+    Protect_head = db.Column(db.Integer)
+    Generat_head_default_construct = db.Column(db.Integer)
+    Generat_head_destruct = db.Column(db.Integer)
+    auteur = db.Column(db.Text)
+    creation_data = db.Column(db.DateTime)
+    class_role = db.Column(db.Text)
+    idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
+
+    def __repr__(self):
+        return '<User %r>' % self.name
+
+class creation_connexion_classmodel_user(db.Model):
+    idTableConnexion = db.Column(db.Integer, primary_key=True, unique=True)
+    idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
+    idClasse = db.Column(db.Integer, db.ForeignKey('classemodel.idClasse'))
+    connexion = db.Column(db.Integer)
+    
+    def __repr__(self):
+        return '<User %r>' % self.idTableConnexion
 
 class notifications(db.Model):
     idNotif = db.Column(db.Integer, primary_key=True, unique=True)
     typeNotif = db.Column(db.Text)
     Commentaire = db.Column(db.Text)
     idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
+    idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
 
     def __repr__(self):
         return '<User %r>' % self.typeNotif
@@ -104,6 +148,24 @@ def creation_user(conn):
     """)
     conn.commit()
 
+def creation_user_banni(conn):
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS user_banni(
+        idUsers INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+	    name TEXT,
+	    email TEXT,
+	    password INTEGER,
+	    vip_account INTEGER,
+        nb_classe_Faite INTEGER,
+        image_profil BLOB,
+        cause TEXT,
+	    idgroupe INTEGER,
+	    FOREIGN KEY(idgroupe) REFERENCES groupe(idGroupe)
+        )
+    """)
+    conn.commit()
+
 def creation_class(conn):
     cursor = conn.cursor()
     cursor.execute("""
@@ -118,10 +180,47 @@ def creation_class(conn):
         creation_data DATETIME,
         class_role TEXT,
         idUser INTEGER,
-	    FOREIGN KEY(idUser) REFERENCES user(idUsers)
+        idUserUnban INTEGER,
+	    FOREIGN KEY(idUser) REFERENCES user(idUsers),
+        FOREIGN KEY(idUserUnban) REFERENCES user_banni(idUsers)
         )
     """)
     conn.commit()
+
+def creation_class_model(conn):
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS classemodel(
+        idClasse INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+	    name TEXT,
+	    classe_mere TEXT,
+	    Protect_head INTEGER,
+	    Generat_head_default_construct INTEGER,
+	    Generat_head_destruct INTEGER,
+        auteur TEXT,
+        creation_data DATETIME,
+        class_role TEXT,
+        idUser INTEGER,
+        idUserUnban INTEGER,
+	    FOREIGN KEY(idUser) REFERENCES user(idUsers),
+        FOREIGN KEY(idUserUnban) REFERENCES user_banni(idUsers)
+        )
+    """)
+    conn.commit()
+
+def creation_connexion_classmodel_user(conn):
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS connexionclassuser(
+        idUser INTEGER,
+        idUserUnban INTEGER,
+        idClasse INTEGER,
+        connexion INTEGER,
+        FOREIGN KEY(idUser) REFERENCES user(idUsers),
+        FOREIGN KEY(idClasse) REFERENCES classemodel(idClasse),
+        FOREIGN KEY(idUserUnban) REFERENCES user_banni(idUsers)
+        )
+    """)
 
 def creation_notif(conn):
     cursor = conn.cursor()
@@ -131,7 +230,9 @@ def creation_notif(conn):
         typeNotif TEXT,
         Commentaire TEXT,
         idUser INTEGER,
+        idUserUnban INTEGER,
         FOREIGN KEY(idUser) REFERENCES user(idUsers)
+        FOREIGN KEY(idUserUnban) REFERENCES user_banni(idUsers)
         )
     """)
     conn.commit()
@@ -143,9 +244,12 @@ def InitDataBase():
         cursor = conn.cursor()
         #Greation des databases
         creation_user(conn)
+        creation_user_banni(conn)
         creation_groupe(conn)
         creation_class(conn)
+        creation_class_model(conn)
         creation_notif(conn)
+        creation_connexion_classmodel_user(conn)
         cursor.execute("""SELECT * FROM user""")
         rows_user = cursor.fetchall()
         photo = convert_pic()
@@ -153,9 +257,13 @@ def InitDataBase():
             users = []
             users.append(("Maxime PONTLEVOY", "maxime.pontlevoy@orange.fr", 157365218, 2, 4, photo, 1))
             users.append(("Support", "mpontlevoy2001@gmail.com", 124864582, 2, 4, photo, 2))
-            users.append(("Commercial", "pmaxime2001@gmail.com", 811483498, 0, 0, photo, 3))
+            users.append(("Commercial", "pmaxime2001@gmail.com", 811483498, 1, 0, photo, 3))
             users.append(("Olivier CORRIO", "olivier.corrio@univ-brest.fr", 123456789, 0, 4, photo, 4))
             users.append(("Client1", "client.personne@gmail.com", 0000, 1, 0, photo, 4))
+            users.append(("Jean PHILIPPE","jean.philippe@gmail.com", 1846943, 0, 6, photo, 4))
+            users.append(("Marc ABSIDE","marc.abside158@gmail.com", 12946285, 0, 9, photo, 4))
+            users.append(("Jules CENDRIN","jules185.18cendrin15@gmail.com", 1864856, 0, 0, photo, 4))
+            users.append(("Arthur AVNANT","avnant.arthur6485@gmail.com", 12584682, 1, 0, photo, 4))
             cursor.executemany("""INSERT INTO user(name, email, password, vip_account, nb_classe_Faite, image_profil, idgroupe) 
                 VALUES(?, ?, ?, ?, ?, ?, ?)""", users)
 
@@ -174,20 +282,71 @@ def InitDataBase():
         rows_classe = cursor.fetchall()
         if rows_classe == []:
             clas = []
-            clas.append(("Personnage", "Entité", 1, 1, 1, "Maxime PONTLEVOY", "Classe des personnages", 1))
-            clas.append(("Chasseur", "Personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Chasseurs", 1))
-            clas.append(("Chevalier", "Personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des chevaliers", 1))
-            clas.append(("Mage", "personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Mages", 1))
-            clas.append(("Démon", "Entité", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Démons", 2))
-            clas.append(("Gobelin", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Gobelins", 2))
-            clas.append(("Ogre", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Ogres", 2))
-            clas.append(("Orc", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Orc", 2))
-            clas.append(("Maison", "Batimnt", 1, 1, 1, "Olivier CORRIO", "Classe général de la maison", 4))
-            clas.append(("Salon", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 1", 4))
-            clas.append(("Cuisine", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 2", 4))
-            clas.append(("Salle a manger", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 3", 4))
-            cursor.executemany("""INSERT INTO classe(name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, creation_data, class_role, idUser) 
-                VALUES(?, ?, ?, ?, ?, ?, DATETIME(), ?, ?)""", clas)
+            clas.append(("Personnage", "Entité", 1, 1, 1, "Maxime PONTLEVOY", "Classe des personnages", 1, 0))
+            clas.append(("Chasseur", "Personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Chasseurs", 1, 0))
+            clas.append(("Chevalier", "Personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des chevaliers", 1, 0))
+            clas.append(("Mage", "personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Mages", 1, 0))
+            clas.append(("Démon", "Entité", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Démons", 2, 0))
+            clas.append(("Gobelin", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Gobelins", 2, 0))
+            clas.append(("Ogre", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Ogres", 2, 0))
+            clas.append(("Orc", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Orc", 2, 0))
+            clas.append(("Maison", "Batimnt", 1, 1, 1, "Olivier CORRIO", "Classe général de la maison", 4, 0))
+            clas.append(("Salon", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 1", 4, 0))
+            clas.append(("Cuisine", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 2", 4, 0))
+            clas.append(("Salle a manger", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 3", 4, 0))
+            clas.append(("Galaxie 1", "Planête 1", 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 1", 7, 0))
+            clas.append(("Galaxie 1", "Planête 2", 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 1", 7, 0))
+            clas.append(("Galaxie 1", "Planête 3", 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 1", 7, 0))
+            clas.append(("Galaxie 1", "Planête 4", 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 1", 7, 0))
+            clas.append(("Galaxie 2", "Planête 1", 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 2", 7, 0))
+            clas.append(("Galaxie 2", "Planête 2", 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 2", 7, 0))
+            clas.append(("Galaxie 2", "Planête 3", 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 2", 7, 0))
+            clas.append(("Galaxie 2", "Planête 4", 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 2", 7, 0))
+            clas.append(("Galaxie 2", "Planête 5", 1, 1, 1, "Marc ABSIDE", "Planête 5 de la Galaxie 2", 7, 0))
+            clas.append(("Robot tourelle", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot tourelle", 6, 0))
+            clas.append(("Robot sniper", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot sniper", 6, 0))
+            clas.append(("Robot assassin", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot asssssin", 6, 0))
+            clas.append(("Robot général", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot général", 6, 0))
+            clas.append(("Robot caporal", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot caporal", 6, 0))
+            clas.append(("Robot dirigeant", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot dirigeant", 6, 0))
+            cursor.executemany("""INSERT INTO classe(name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, creation_data, class_role, idUser, idUserUnban) 
+                VALUES(?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?)""", clas)
+
+        cursor.execute("""SELECT * from classemodel""")
+        rows_classe = cursor.fetchall()
+        if rows_classe == []:
+            clasmodel = []
+            clasmodel.append(("Personnage", "Entité", 1, 1, 1, "Classe Générique", "Classe des personnages", 0, 0))
+            clasmodel.append(("Chasseur", "Personnage", 1, 1, 1, "Classe Générique", "Classe des Chasseurs", 0, 0))
+            clasmodel.append(("Chevalier", "Personnage", 1, 1, 1, "Classe Générique", "Classe des chevaliers", 0, 0))
+            clasmodel.append(("Mage", "personnage", 1, 1, 1, "Classe Générique", "Classe des Mages", 0, 0))
+            clasmodel.append(("Démon", "Entité", 1, 1, 1, "Classe Générique", "Classe des Démons", 0, 0))
+            clasmodel.append(("Gobelin", "Démon", 1, 1, 1, "Classe Générique", "Classe des Gobelins", 0, 0))
+            clasmodel.append(("Ogres", "Démon", 1, 1, 1, "Classe Générique", "Classe des Orges", 0, 0))
+            clasmodel.append(("Chevalier noir", "Démon", 1, 1, 1, "Classe Générique", "Classe des Chevalier noir", 0, 0))
+            clasmodel.append(("Dragons", "Démon", 1, 1, 1, "Classe Générique", "Classe des Dragons", 0, 0))
+            clasmodel.append(("Roi Démon", "Démon", 1, 1, 1, "Classe Générique", "Classe du Roi démon", 0, 0))
+            clasmodel.append(("Armes", "", 1, 1, 1, "Classe Générique", "Classe des Armes", 0, 0))
+            clasmodel.append(("Arme a main", "Armes", 1, 1, 1, "Classe Générique", "Classe des Armes à main", 0, 0))
+            clasmodel.append(("Epée Longue", "Arme a main", 1, 1, 1, "Classe Générique", "Classe des Epee longue", 0, 0))
+            clasmodel.append(("Dague", "Arme a main", 1, 1, 1, "Classe Générique", "Classe des Dagues", 0, 0))
+            clasmodel.append(("Sabre", "Arme a main", 1, 1, 1, "Classe Générique", "Classe des Sabres", 0, 0))
+            clasmodel.append(("Arme a feu", "Armes", 1, 1, 1, "Classe Générique", "Classe des Armes a feu", 0, 0))
+            clasmodel.append(("pistolet", "Arme a feu", 1, 1, 1, "Classe Générique", "Classe des pistolet", 0, 0))
+            clasmodel.append(("mousqueter", "Arme a feu", 1, 1, 1, "Classe Générique", "Classe des mousqueter", 0, 0))
+            cursor.executemany("""INSERT INTO classemodel(name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, creation_data, class_role, idUser, idUserUnban) 
+                VALUES(?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?)""", clasmodel)
+
+        cursor.execute("""SELECT * from connexionclassuser""")
+        rows_classe = cursor.fetchall()
+        if rows_classe == []:
+            connexion = []
+            for x in range(1, 10):
+                for i in range(1, 19):
+                    connexion.append((x, i, randint(0, 1)))
+            cursor.executemany("""INSERT INTO connexionclassuser(idUser, idUserUnban, idClasse, connexion)
+                VALUES(?, 0, ?, ?)""", connexion)
+
 
         cursor.execute("""SELECT * FROM notifications""")
         rows_notif = cursor.fetchall()
@@ -196,16 +355,16 @@ def InitDataBase():
             notif.append(("Général", "Bienvenue sur le site de création de classe pour MMORPG, vous avez la capaciter de pouvoir créer actuellement 10 classes.", 0))
             notif.append(("Information", "Si jamais vous voulez créer d'autre classe rendez-vous dans l'onglet Boutique pour pouvoir acheter un grade supérieur.", 0))
             notif.append(("Classe", "La création des vos future classe est près a l'meploie!!!", 0))
-            cursor.executemany("""INSERT INTO notifications(typeNotif, Commentaire, idUser)
-                VALUES(?, ?, ?)""", notif)
+            cursor.executemany("""INSERT INTO notifications(typeNotif, Commentaire, idUser, idUserUnban)
+                VALUES(?, ?, ?, 0)""", notif)
         if rows_notif != []:
             notif = []
             notif.append(("Général", "Bienvenue sur le site de création de classe pour MMORPG, vous avez la capaciter de pouvoir créer actuellement 10 classes.", 0))
             notif.append(("Information", "Si jamais vous voulez créer d'autre classe rendez-vous dans l'onglet Boutique pour pouvoir acheter un grade supérieur.", 0))
             notif.append(("Classe", "La création des vos futures classes est près a l'emploie!!!", 0))
             cursor.execute("""DELETE FROM notifications""")
-            cursor.executemany("""INSERT INTO notifications(typeNotif, Commentaire, idUser)
-                VALUES(?, ?, ?)""", notif)
+            cursor.executemany("""INSERT INTO notifications(typeNotif, Commentaire, idUser, idUserUnban)
+                VALUES(?, ?, ?, 0)""", notif)
 
 
         #Fin de l'appel
