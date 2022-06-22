@@ -14,7 +14,7 @@ from config import Config
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, true
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 
@@ -565,32 +565,63 @@ def genererh(idClass):
     cursor.execute("""SELECT * FROM classe 
         WHERE classe.idClasse=?""",(idClass,))
     #Envoie de la données dans une varaible qui va traiter et écrire dans le fichier txt
-    donnees = cursor.fetchall()   
+    donnees = cursor.fetchall() 
+    TexteH = ""  
     #Génération des données a écrire dans le fichier
-    Protect_head = "#ifndef " + str(donnees[0][1])
-    definition = "#define " + str(donnees[0][1])
-    string = "#include <string>"
-    name = "class " + donnees[0][1]
-    ouverture = "{"
-    public = "     public:"
-    exemple_classe = "     void exemple();"
-    private = "     private:"
-    exemple_var = "     int exemple"
-    fermeture = "};"
-    fin = "#endif"
     #Ecriture du fichier
+    #Zone d'entête et ouverture de la classe
+    if (donnees[0][3] == 1):
+        TexteH += "#ifndef " + str(donnees[0][1]) + "\n" + "#define " + str(donnees[0][1]) + "\n"
+    TexteH += "#include <string> \nusing namespace std;\n"
+    TexteH += "\nclass " + str(donnees[0][1]) 
+    if (donnees[0][2] != ""):
+        TexteH += " : public " + str(donnees[0][2])
+    TexteH += "\n" + "{\n"
+    #Zone public
+    TexteH += "     public:\n\n"
+    if (donnees[0][4] == 1):
+        TexteH +=  "     " + str(donnees[0][1]) + "(void);     //Attribue pour le constucteur par defaut\n"
+    else:
+        TexteH +=  "     " + str(donnees[0][1]) + "(unsigned int);     //Attribue pour le constucteur\n"
+    if (donnees[0][5] == 1):
+        TexteH += "     ~" + str(donnees[0][1]) + "(void);     //Attribue pour le destrucuter\n"
+    if (donnees[0][37] == 1):
+        for i in range(38, 46):
+            if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
+                TexteH += "     void " + str(donnees[0][i]) + "();\n"
+    #Ajout des attribues
+    TexteH += "\n"
+    if (donnees[0][9] == 1):
+        #Zone public
+        if(donnees[0][10] == 1):
+            for i in range(11, 19):
+                if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
+                    TexteH += "     int "+ str(donnees[0][i]) + ";\n"
+        #Zone proteger
+        if(donnees[0][19] == 1):
+            TexteH += "\n     protected:     //Attribue Proteger\n"
+            for i in range(20, 28):
+                if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
+                    TexteH += "     int "+ str(donnees[0][i]) + ";\n"
+        #Zone priver
+        if(donnees[0][28] == 1):
+            TexteH += "\n     private:     //Attribue Priver\n\n"
+            for i in range(29, 37):
+                if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
+                    TexteH += "     int "+ str(donnees[0][i]) + ";\n"
+
+    TexteH += "};\n"
+    if (donnees[0][3] == 1):
+        TexteH += "#endif"
     file = open("h.txt", "w")
-    file.write("%s \n%s \n\n%s \n\n%s \n%s \n%s \n\n%s \n\n%s \n\n%s \n%s \n%s" % 
-               (Protect_head, definition, string, 
-                name, ouverture, public, exemple_classe, 
-                private, exemple_var, fermeture, fin)) 
+    file.write(TexteH) 
     file.close()
     #Génération du fichier .h
     path = "h.txt"
-    name = donnees[0][1] + ".hpp"
+    names = donnees[0][1] + ".hpp"
     #Fermeture de la database
     conn.close()
-    return send_file(path, as_attachment=True, download_name = name)
+    return send_file(path, as_attachment=True, download_name = names)
 
 #bouton de génération du .cpp
 @app.route('/generercpp/<int:idClass>')
@@ -602,30 +633,30 @@ def generercpp(idClass):
     cursor.execute("""SELECT * FROM classe 
         WHERE classe.idClasse=?""",(idClass,))
     #Envoie de la données dans une classe qui va traitENDIFer et écrire dans le fichier txt
-    donnees2 = cursor.fetchall()
+    donnees = cursor.fetchall()
+    TexteCPP = ""
     #Génération des données à écrire dans le fichier
-    tete = "#include"
-    tete_name = '"' + donnees2[0][1] +'.hpp"'
-    sous_tete = "#include <string>"
-    sous_tete2 = "#include <iostream>"
-    type = "using namespace std;"
-
-    name = "void " + donnees2[0][1] + "::exemple()"
-    ouverture = "{"
-    fermeture = "}"
-
+    TexteCPP += '#include "' + str(donnees[0][1]) + '"\n#include <iostream>\n#include <cmath>\n\nusing namespace std;\n\n'
+    if (donnees[0][4] == 1):
+        TexteCPP += "//Methode pour le constructeur\n"
+        TexteCPP += str(donnees[0][1]) + "::" + str(donnees[0][1]) + "(void)\n{\n}\n\n"
+    if (donnees[0][5] == 1):
+        TexteCPP += "//Methode pour le destructeur\n"
+        TexteCPP += str(donnees[0][1]) + "::~" + str(donnees[0][1]) + "(void)\n{\n}\n\n"
+    if (donnees[0][37] == 1):
+        for i in range(38, 46):
+            if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
+                TexteCPP += "void " + str(donnees[0][1]) + "::" + str(donnees[0][i]) + "()\n{\n     //Empty area to complete\n}\n\n"
     #Ecriture du fichier
     file = open('cpp.txt', "w")
-    file.write("%s %s \n%s \n%s \n\n%s \n\n%s \n%s \n\n%s" % 
-               (tete, tete_name, sous_tete, sous_tete2, type, 
-                name, ouverture, fermeture))
+    file.write(TexteCPP)
     file.close()
     #Gnération du fichier .cpp
     path = "cpp.txt"
-    name = donnees2[0][1] + ".cpp"
+    names = donnees[0][1] + ".cpp"
     #Fermeture de la database
     conn.close()
-    return send_file(path, as_attachment=True, download_name = name)
+    return send_file(path, as_attachment=True, download_name = names)
 
 
 ##NOTIFICATIONS##
@@ -709,14 +740,101 @@ def generer():
             head_destructeur = request.form.get('Generat_head_destruct')
             auteur = request.form['auteur']
             commentaire = request.form['class_role']
+            attribue = request.form.get('attribue')
+            public = request.form.get('public')
+            protected = request.form.get('protected')
+            private = request.form.get('private')
+            public_var = []
+            private_var = []
+            protect_var = []
+            methode_var = []
+            methode = request.form.get('methode')
+            for i in range(8):
+                public_var.append((""))
+                protect_var.append((""))
+                private_var.append((""))
+                methode_var.append((""))
+            if (attribue == "1"): 
+                if (public == "1"):
+                    public_var[0] = request.form['public1']
+                    public_var[1] = request.form['public2']
+                    public_var[2] = request.form['public3']
+                    public_var[3] = request.form['public4']
+                    public_var[4] = request.form['public5']
+                    public_var[5] = request.form['public6']
+                    public_var[6] = request.form['public7']
+                    public_var[7] = request.form['public8']
+                elif (request.form.get('public') == None):
+                    for i in range(8):
+                        public_var[i] = ""
+                    public = 0 
+                if (protected == "1"):
+                    protect_var[0] = request.form['protected1']
+                    protect_var[1] = request.form['protected2']
+                    protect_var[2] = request.form['protected3']
+                    protect_var[3] = request.form['protected4']
+                    protect_var[4] = request.form['protected5']
+                    protect_var[5] = request.form['protected6']
+                    protect_var[6] = request.form['protected7']
+                    protect_var[7] = request.form['protected8']
+                elif (request.form.get('protected') == None):
+                    for i in range(8):
+                        protect_var[i] = ""
+                    protected = 0
+                if (private == "1"):
+                    private_var[0] = request.form['private1']
+                    private_var[1] = request.form['private2']
+                    private_var[2] = request.form['private3']
+                    private_var[3] = request.form['private4']
+                    private_var[4] = request.form['private5']
+                    private_var[5] = request.form['private6']
+                    private_var[6] = request.form['private7']
+                    private_var[7] = request.form['private8']
+                elif (request.form.get('private') == None):
+                    for i in range(8):
+                        private_var[i] = ""
+                    private = 0
+            else:
+                for i in range(8):
+                    public_var[i] = ""
+                    protect_var[i] = ""
+                    private_var[i] = ""
+                attribue = 0
+                public = 0
+                protected = 0
+                private = 0
+            if (methode == "1"):
+                methode_var[0] = request.form['methode1']
+                methode_var[1] = request.form['methode2']
+                methode_var[2] = request.form['methode3']
+                methode_var[3] = request.form['methode4']
+                methode_var[4] = request.form['methode5']
+                methode_var[5] = request.form['methode6']
+                methode_var[6] = request.form['methode7']
+                methode_var[7] = request.form['methode8']
+            elif (request.form.get('methode') == None):
+                for i in range(8):
+                    methode_var[i] = ""
+                methode = 0    
             User = session['user']['idUser']
             list_classe = []
             list_classe.append((name, classe_mere, Protect_head,
-                                default_constructeur, head_destructeur, auteur, commentaire, User))
+                                default_constructeur, head_destructeur, auteur, commentaire, attribue, 
+                                public, public_var[0], public_var[1], public_var[2], public_var[3], public_var[4], public_var[5], public_var[6], public_var[7], 
+                                protected, protect_var[0], protect_var[1], protect_var[2], protect_var[3], protect_var[4], protect_var[5], protect_var[6], protect_var[7],
+                                private, private_var[0], private_var[1], private_var[2], private_var[3], private_var[4], private_var[5], private_var[6], private_var[7],
+                                methode, methode_var[0], methode_var[1], methode_var[2], methode_var[3], methode_var[4], methode_var[5], methode_var[6], methode_var[7],
+                                User))
             #Ecriture de la classe sur la base de données
             cursor.executemany("""INSERT INTO classe(name, classe_mere, Protect_head, Generat_head_default_construct, 
-                Generat_head_destruct, auteur, creation_data, class_role, idUser) 
-                VALUES(?, ?, ?, ?, ?, ?, DATETIME(), ?, ?)""", list_classe)  
+                Generat_head_destruct, auteur, creation_data, class_role, attribue, 
+                public, public1, public2, public3, public4, public5, public6, public7, public8, 
+                protected, protected1, protected2, protected3, protected4, protected5, protected6, protected7, protected8,
+                private, private1, private2, private3, private4, private5, private6, private7, private8,
+                methode, methode1, methode2, methode3, methode4, methode5, methode6, methode7, methode8,
+                idUser, idUserUnban) 
+                VALUES(?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)""", list_classe)  
+            conn.commit()
             #Ajout d'une classe sur le compteur de l'utilisateur
             nbclasse = validation[0][0] + 1
             cursor.execute("""UPDATE user SET nb_classe_Faite =? WHERE user.name=?""", 
