@@ -1,0 +1,253 @@
+.Generateur-classe {
+	display:  block;
+	margin: auto;
+}
+
+.Generateur-classe .Titre-form {
+	display: block;
+    margin: 30px 20px 50px 30px;
+    height: 100px;
+    background-color: var(--primary-color-light);
+	transition: var(--tran-05);
+    color: var(--text-color);
+    border-radius: 10px;
+    box-shadow: -11px 11px 1px rgb(0 0 0 / 30%);
+    text-align: center;
+}
+
+.Generateur-classe .Titre-form h1 {
+	padding-top: 30px;
+}
+
+.Generateur-classe form {
+	z-index: 1;
+	display: block;
+	border-radius: 10px;
+	margin: 20px;
+	color: var(--text-color);
+}
+
+.Generateur-classe form .bouton .button-envoyer-class {
+	display: block;
+	border-radius: 20px;
+	border: 1px solid var(--primary-color);
+	transition: var(--tran-05);
+	background-color: #380036;
+	color: #FFFFFF;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 12px 45px;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	cursor: pointer;
+	margin: auto;
+}
+
+.Generateur-classe form .Definition-classe {
+	z-index: 2;
+	display: block;
+	padding: 10px;
+	border-radius: 5px;
+	margin: 15px;
+	border: 2px solid var(--primary-color);
+	transition: var(--tran-05);
+}
+
+.Generateur-classe form .toutes-options {
+	display: flex;
+}
+
+.Generateur-classe form .toutes-options .gauche {
+	display: block;
+	width: 30%;
+}
+.Generateur-classe form .toutes-options .droite {
+	display: block;
+	width: 70%;
+}
+
+.Generateur-classe form .toutes-options .gauche .Options-classes,
+.Generateur-classe form .toutes-options .droite .Options-classes {
+	z-index: 2;
+	display: block;
+	padding: 10px;
+	margin: 15px;
+	border-radius: 5px;
+	border: 2px solid var(--primary-color);
+	transition: var(--tran-05);
+	
+}
+
+.Generateur-classe form .toutes-options .gauche .Commentaire {
+	z-index: 2;
+	display: block;
+	padding: 10px;
+	margin: 15px;
+	border-radius: 5px;
+	border: 2px solid var(--primary-color);
+	transition: var(--tran-05);
+}
+
+.Generateur-classe form .toutes-options .gauche .Commentaire .zone-remplissage {
+	display: block;
+	padding: 5px;
+	border-radius: 5px;
+}
+
+.Generateur-classe form .toutes-options .gauche .Commentaire.close .zone-remplissage {
+	display: none;
+}
+
+.Generateur-classe form .toutes-options .gauche .Commentaire .zone-remplissage .comment-area {
+	height: 75px; 
+	width: 100%; 
+	min-width: 100%;
+	max-width: 100%;
+	min-height: 75px;
+	max-height: 350px;
+	border-radius: 5px;
+	padding: 5px;
+}
+
+.Generateur-classe form .toutes-options .gauche .Commentaire .zone-remplissage .comment-area:invalid {
+	border: 1px solid var(--primary-color-red);
+}
+  
+.Generateur-classe form .toutes-options .gauche .Commentaire .zone-remplissage .comment-area:valid {
+	border: 1px solid var(--primary-color);
+}
+  
+
+.Generateur-classe form p {
+	background: var(--body-color);
+	transition: var(--tran-05);
+	margin-left: 20px;
+	margin-top: -25px;
+	width: 200px;
+	position: relative;
+	border-radius: 10px;
+	padding-left: 5px;
+}
+
+.Generateur-classe form .Definition-classe p {
+	width: 185px;
+}
+
+.Generateur-classe form .toutes-options .gauche .Commentaire p {
+	width: 125px;
+}
+
+.Generateur-classe form .toutes-options .gauche .Commentaire .name {
+	background: var(--body-color);
+    transition: var(--tran-05);
+    margin-left: 20px;
+    margin-top: -23px;
+    position: relative;
+    border-radius: 10px;
+    padding-left: 5px;
+	width: 150px;
+}
+
+.Generateur-classe form .toutes-options .gauche .Options-classes p {
+	width: 75px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes p {
+	width: 330px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .attribue,
+.Generateur-classe form .toutes-options .droite .Options-classes .methode {
+	z-index: 2;
+    display: block;
+    padding: 10px;
+    margin: 15px;
+    border-radius: 5px;
+    border: 2px solid var(--primary-color);
+    transition: var(--tran-05);
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .attribue .titre,
+.Generateur-classe form .toutes-options .droite .Options-classes .methode .titre {
+	background: var(--body-color);
+    transition: var(--tran-05);
+    margin-left: 20px;
+    margin-top: -24px;
+    position: relative;
+    border-radius: 10px;
+    padding-left: 5px;
+    width: 290px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .methode .titre {
+	width: 315px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox {
+	display: flex;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox.close {
+	display: none;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-public,
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-proteger,
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-priver {
+	display: block;
+	width: 33%;
+	z-index: 2;
+	padding: 10px;
+	margin: 15px 5px 5px 5px;
+	border-radius: 5px;
+	border: 1px solid var(--primary-color);
+	transition: var(--tran-05);
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-public .name,
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-proteger .name,
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-priver .name {
+	background: var(--body-color);
+	transition: var(--tran-05);
+	margin-left: 20px;
+	margin-top: -25px;
+	position: relative;
+	border-radius: 10px;
+	padding-left: 5px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-public .name {
+	width: 60px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-proteger .name {
+	width: 80px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-priver .name {
+	width: 55px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-public .name p {
+	width: 60px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-proteger .name p {
+	width: 80px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-priver .name p {
+	width: 55px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-public .role .zone-remplissage,
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-proteger .role .zone-remplissage,
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-priver .role .zone-remplissage {
+	margin: 5px 0 0 5px;
+}
+
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-public .role .zone-remplissage input,
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-proteger .role .zone-remplissage input,
+.Generateur-classe form .toutes-options .droite .Options-classes .Option-checkbox .role-priver .role .zone-remplissage input {
+	margin-left: 5px;
+}
