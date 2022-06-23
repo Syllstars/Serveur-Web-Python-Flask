@@ -179,6 +179,43 @@ def creation_class(conn):
         auteur TEXT,
         creation_data DATETIME,
         class_role TEXT,
+        attribue INTEGER,
+        public INTEGER,
+        public1 TEXT,
+        public2 TEXT,
+        public3 TEXT,
+        public4 TEXT,
+        public5 TEXT,
+        public6 TEXT,
+        public7 TEXT,
+        public8 TEXT,
+        protected INTEGER,
+        protected1 TEXT,
+        protected2 TEXT,
+        protected3 TEXT,
+        protected4 TEXT,
+        protected5 TEXT,
+        protected6 TEXT,
+        protected7 TEXT,
+        protected8 TEXT,
+        private INTEGER,
+        private1 TEXT,
+        private2 TEXT,
+        private3 TEXT,
+        private4 TEXT,
+        private5 TEXT,
+        private6 TEXT,
+        private7 TEXT,
+        private8 TEXT,
+        methode INTEGER,
+        methode1 TEXT,
+        methode2 TEXT,
+        methode3 TEXT,
+        methode4 TEXT,
+        methode5 TEXT,
+        methode6 TEXT,
+        methode7 TEXT,
+        methode8 TEXT,
         idUser INTEGER,
         idUserUnban INTEGER,
 	    FOREIGN KEY(idUser) REFERENCES user(idUsers),
@@ -200,6 +237,43 @@ def creation_class_model(conn):
         auteur TEXT,
         creation_data DATETIME,
         class_role TEXT,
+        attribue INTEGER,
+        public INTEGER,
+        public1 TEXT,
+        public2 TEXT,
+        public3 TEXT,
+        public4 TEXT,
+        public5 TEXT,
+        public6 TEXT,
+        public7 TEXT,
+        public8 TEXT,
+        protected INTEGER,
+        protected1 TEXT,
+        protected2 TEXT,
+        protected3 TEXT,
+        protected4 TEXT,
+        protected5 TEXT,
+        protected6 TEXT,
+        protected7 TEXT,
+        protected8 TEXT,
+        private INTEGER,
+        private1 TEXT,
+        private2 TEXT,
+        private3 TEXT,
+        private4 TEXT,
+        private5 TEXT,
+        private6 TEXT,
+        private7 TEXT,
+        private8 TEXT,
+        methode INTEGER,
+        methode1 TEXT,
+        methode2 TEXT,
+        methode3 TEXT,
+        methode4 TEXT,
+        methode5 TEXT,
+        methode6 TEXT,
+        methode7 TEXT,
+        methode8 TEXT,
         idUser INTEGER,
         idUserUnban INTEGER,
 	    FOREIGN KEY(idUser) REFERENCES user(idUsers),
@@ -282,35 +356,42 @@ def InitDataBase():
         rows_classe = cursor.fetchall()
         if rows_classe == []:
             clas = []
-            clas.append(("Personnage", "Entité", 1, 1, 1, "Maxime PONTLEVOY", "Classe des personnages", 1, 0))
-            clas.append(("Chasseur", "Personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Chasseurs", 1, 0))
-            clas.append(("Chevalier", "Personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des chevaliers", 1, 0))
-            clas.append(("Mage", "personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Mages", 1, 0))
-            clas.append(("Démon", "Entité", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Démons", 2, 0))
-            clas.append(("Gobelin", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Gobelins", 2, 0))
-            clas.append(("Ogre", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Ogres", 2, 0))
-            clas.append(("Orc", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Orc", 2, 0))
-            clas.append(("Maison", "Batimnt", 1, 1, 1, "Olivier CORRIO", "Classe général de la maison", 4, 0))
-            clas.append(("Salon", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 1", 4, 0))
-            clas.append(("Cuisine", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 2", 4, 0))
-            clas.append(("Salle a manger", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 3", 4, 0))
-            clas.append(("Galaxie 1", "Planête 1", 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 1", 7, 0))
-            clas.append(("Galaxie 1", "Planête 2", 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 1", 7, 0))
-            clas.append(("Galaxie 1", "Planête 3", 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 1", 7, 0))
-            clas.append(("Galaxie 1", "Planête 4", 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 1", 7, 0))
-            clas.append(("Galaxie 2", "Planête 1", 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 2", 7, 0))
-            clas.append(("Galaxie 2", "Planête 2", 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 2", 7, 0))
-            clas.append(("Galaxie 2", "Planête 3", 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 2", 7, 0))
-            clas.append(("Galaxie 2", "Planête 4", 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 2", 7, 0))
-            clas.append(("Galaxie 2", "Planête 5", 1, 1, 1, "Marc ABSIDE", "Planête 5 de la Galaxie 2", 7, 0))
-            clas.append(("Robot tourelle", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot tourelle", 6, 0))
-            clas.append(("Robot sniper", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot sniper", 6, 0))
-            clas.append(("Robot assassin", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot asssssin", 6, 0))
-            clas.append(("Robot général", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot général", 6, 0))
-            clas.append(("Robot caporal", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot caporal", 6, 0))
-            clas.append(("Robot dirigeant", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot dirigeant", 6, 0))
-            cursor.executemany("""INSERT INTO classe(name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, creation_data, class_role, idUser, idUserUnban) 
-                VALUES(?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?)""", clas)
+            clas.append(("Personnage", "Entite", 1, 1, 1, "Maxime PONTLEVOY", "Classe des personnages", 1, 0, 1, 1, "m_vie", "m_mana", 0, 1, "estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
+            clas.append(("Chasseur", "Personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Chasseurs", 1, 0, 1, 1, "m_vie", "m_mana", 0, 1, "estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
+            clas.append(("Chevalier", "Personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des chevaliers", 1, 0, 1, 1, "m_vie", "m_mana", 0, 1, "estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
+            clas.append(("Mage", "personnage", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Mages", 1, 0, 1, 1, "m_vie", "m_mana", 0, 1, "estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
+            clas.append(("Démon", "Entité", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Démons", 2, 0, 1, 1, "m_vie", "m_mana", 0, 1, "estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
+            clas.append(("Gobelin", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Gobelins", 2, 0, 1, 1, "m_vie", "m_mana", 0, 1, "estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
+            clas.append(("Ogre", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Ogres", 2, 0, 1, 1, "m_vie", "m_mana", 0, 1, "estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
+            clas.append(("Orc", "Démon", 1, 1, 1, "Maxime PONTLEVOY", "Classe des Orc", 2, 0, 1, 1, "m_vie", "m_mana", 0, 1, "estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
+            clas.append(("Maison", "Batimnt", 1, 1, 1, "Olivier CORRIO", "Classe général de la maison", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Salon", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 1", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Cuisine", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 2", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Salle a manger", "Maison", 1, 1, 1, "Olivier CORRIO", "Pièce 3", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Galaxie 1", "Planête 1", 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Galaxie 1", "Planête 2", 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Galaxie 1", "Planête 3", 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Galaxie 1", "Planête 4", 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Galaxie 2", "Planête 1", 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Galaxie 2", "Planête 2", 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Galaxie 2", "Planête 3", 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Galaxie 2", "Planête 4", 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Galaxie 2", "Planête 5", 1, 1, 1, "Marc ABSIDE", "Planête 5 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Robot tourelle", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot tourelle", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Robot sniper", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot sniper", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Robot assassin", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot asssssin", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Robot général", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot général", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Robot caporal", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot caporal", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Robot dirigeant", "Enemy", 1, 1, 1, "Jean PHILIPPE", "Robot dirigeant", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            cursor.executemany("""INSERT INTO classe
+                (name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, creation_data, class_role, idUser, idUserUnban, 
+                attribue, 
+                private, private1, private2, 
+                protected, 
+                public, public1,
+                methode, 
+                methode1, methode2, methode3, methode4) 
+                VALUES(?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", clas)
 
         cursor.execute("""SELECT * from classemodel""")
         rows_classe = cursor.fetchall()
