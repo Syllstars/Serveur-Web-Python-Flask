@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<!-- Coding by CodingLab | www.codinglabweb.com -->
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!----======== CSS ======== -->
+	<link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_sidebar.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_boutique.css') }}">
+
+
+	<!----===== Boxicons CSS ===== -->
+	<link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+
+	<!--<title>Dashboard Sidebar Menu</title>-->
+	<title>MMOGC -- Générateur de classe</title>
+</head>
+
+<body>
+	<nav class="sidebar close">
+		<header>
+			<div class="image-text">
+				<span class="image">
+					<img src="{{ url_for('static', filename = 'image/logo.png') }}" alt="">
+				</span>
+
+				<div class="text logo-text">
+					<span class="name">MMOGC</span>
+					<span class="profession">Class Generator</span>
+				</div>
+			</div>
+
+			<i class='bx bx-chevron-right toggle'></i>
+		</header>
+
+		<div class="menu-bar">
+			<div class="menu">
+
+
+				<ul class="menu-links">
+					<li class="nav-link">
+						<a href="acceuil">
+							<i class='bx bx-home-alt icon'></i>
+							<span class="text nav-text">Dashboard</span>
+						</a>
+					</li>
+					<li class="nav-link">
+						<a href="generateur">
+							<i class='bx bx-pie-chart-alt icon'></i>
+							<span class="text nav-text">Générateur</span>
+						</a>
+					</li>
+
+					<li class="nav-link">
+						<a href="boutique">
+							<i class='bx bx-wallet icon'></i>
+							<span class="text nav-text">Boutiques</span>
+						</a>
+					</li>
+
+				</ul>
+			</div>
+
+			<div class="bottom-content">
+				<li class="nav-link">
+					<a href="user">
+						<i class='bx bx-user icon'></i>
+						<span class="text nav-text">User</span>
+					</a>
+				</li>
+				<li class="nav-link">
+					<a href="notification">
+						<i class='bx bx-bell icon'></i>
+						<span class="text nav-text">Notifications</span>
+					</a>
+				</li>
+				{% if idGroup == 10 %}
+				<li class="nav-link">
+					<a href="gestiondata">
+						<i class='bx bx-data icon'></i>
+						<span class="text nav-text">DataBase</span>
+					</a>
+				</li>
+				{% endif %}
+				<li class="">
+					<a href="/logout">
+						<i class='bx bx-log-out icon'></i>
+						<span class="text nav-text">Logout</span>
+					</a>
+				</li>
+
+				<li class="mode">
+					<div class="sun-moon">
+						<i class='bx bx-moon icon moon'></i>
+						<i class='bx bx-sun icon sun'></i>
+					</div>
+					<span class="mode-text text">Dark mode</span>
+
+					<div class="toggle-switch">
+						<span class="switch"></span>
+					</div>
+				</li>
+
+			</div>
+		</div>
+
+	</nav>
+
+	<section class="home">
+		<div class="bandeau un">
+			<h1>Mode pour générer des classes</h1>
+		</div>
+		<div class="module-boutique">
+			<!-- Classe Basique -->
+			<div class="container">
+				<div class="card">
+					<div class="card-head">
+						<div class="product-detail">
+							<h2 style="padding-top: 50px;  color: rgba(255, 255, 255, 0.7)">Basic</h2>
+							Version Basic to use this web Site
+						</div>
+						<span class="back-text">
+							MBS
+						</span>
+					</div>
+					<div class="card-body">
+						<div class="product-desc">
+							<span class="product-title">
+								Version <b>Basic</b>
+								<span class="badge">
+									New
+								</span>
+							</span>
+							<span class="product-caption">
+								Content :
+								<br><br>
+								<ul class="detail-formule">
+									<li><b>10</b> Classes maximum</li>
+									<li><b>10</b> Classes can be likes</li>
+								</ul>
+							</span>
+							<span class="product-rating">
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star grey"></i>
+							</span>
+						</div>
+						<div class="product-properties">
+							<span class="product-price">
+								<b>0.00 €</b>
+							</span>
+						</div>
+						{% if vip_account != 0 %}
+						<button class="button-shop" onclick='window.location.href = "/payement/0.00"'>Acheter</button>
+						{% else %}
+						<button class="button-shop actif">Actif</button>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+
+			<!-- Classe Classique -->
+			<div class="container">
+				<div class="card">
+					<div class="card-head">
+						<div class="product-detail">
+							<h2 style="padding-top: 50px; color: rgba(0, 255, 0, 0.7)">Classic</h2>
+							Version Classic to use this web Site
+						</div>
+						<span class="back-text">
+							MCL
+						</span>
+					</div>
+					<div class="card-body">
+						<div class="product-desc">
+							<span class="product-title">
+								Version <b>Classic</b>
+								<span class="badge">
+									New
+								</span>
+							</span>
+							<span class="product-caption">
+								Content :
+								<br><br>
+								<ul class="detail-formule">
+									<li><b>50</b> Classes maximum</li>
+									<li><b>50</b> Classes can be likes</li>
+								</ul>
+							</span>
+							<span class="product-rating">
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star grey"></i>
+							</span>
+						</div>
+						<div class="product-properties">
+							<span class="product-price">
+								<b>9.99 €</b>
+							</span>
+						</div>
+						{% if vip_account != 1 %}
+						<button class="button-shop" onclick='window.location.href = "/payement/9.99"'>Acheter</button>
+						{% else %}
+						<button class="button-shop actif">Actif</button>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			<!-- Classe Classique -->
+			<div class="container">
+				<div class="card">
+					<div class="card-head">
+						<div class="product-detail">
+							<h2 style="padding-top: 50px; color: rgba(255, 215, 0, 1)">Premium</h2>
+							Version Premium to use this web Site
+						</div>
+						<span class="back-text">
+							MPR
+						</span>
+					</div>
+					<div class="card-body">
+						<div class="product-desc">
+							<span class="product-title">
+								Version <b>Premium</b>
+								<span class="badge">
+									New
+								</span>
+							</span>
+							<span class="product-caption">
+								Content :
+								<br><br>
+								<ul class="detail-formule">
+									<li><b>Unlimited</b> Classes maximum</li>
+									<li><b>Unlimited</b> Classes can be likes</li>
+								</ul>
+							</span>
+							<span class="product-rating">
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star"></i>
+								<i class="fa fa-star grey"></i>
+							</span>
+						</div>
+						<div class="product-properties">
+							<span class="product-price">
+								<b>49.99 €</b>
+							</span>
+						</div>
+						{% if vip_account != 2 %}
+						<button class="button-shop" onclick='window.location.href = "/payement/49.99"'>Acheter</button>
+						{% else %}
+						<button class="button-shop actif">Actif</button>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<div class="bandeau deux">
+			<h1>Classes Génériques créées en automatique</h1>
+		</div>
+		<div class="classe-can-be-like">
+			<div class="zone-classe">
+                <!--Zone à récupérer-->
+                {% for row in classe_systeme %}
+                <div class="bandelette">
+                    <div class="multi-zone">
+                        <div class="partie-principale">
+                            <div class="nom">
+                                {{ row[1] }} ({{ row[2] }}) => {{ row[3] }}
+								{% if classe_like[row[0]-1][2] == 1 %}							
+								<i class='bx bxs-heart icon' id="like-ok" onclick='window.location.href = "/dislikeclasse/{{ row[0] }}"'></i>					
+								{% else %}
+								<i class='bx bx-heart icon' id="like-nok" onclick='window.location.href = "/likeclasse/{{ row[0] }}"'></i>
+								{% endif %}
+                            </div>
+                            <div class="options">
+                                <div>
+                                    {% if row[4] == 1 %}
+                                    <input type="checkbox" disabled checked />
+                                    {% else %}
+                                    <input type="checkbox" disabled />
+                                    {% endif %}
+
+                                    : Protéger le header contre les inclusion multiples
+                                </div>
+                                <div>
+                                    {% if row[5] == 1 %}
+                                    <input type="checkbox" disabled checked />
+                                    {% else %}
+                                    <input type="checkbox" disabled />
+                                    {% endif %}
+
+                                    : Générer un constructeur par défaut
+                                </div>
+                                <div>
+                                    {% if row[6] == 1 %}
+                                    <input type="checkbox" disabled checked />
+                                    {% else %}
+                                    <input type="checkbox" disabled />
+                                    {% endif %}
+
+                                    : Générer un déstructeur
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="commentaire">
+                            <div class="data">
+                                <div class="auteur">
+                                    {{ row[8] }}
+                                </div>
+                                <div class="date">
+                                    {{ row[9] }}
+                                </div>
+                            </div>
+                            <div class="texte">
+                                {{ row[10] }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+			</div>
+		</div>
+	</section>
+	<script src="{{ url_for('static', filename = 'js/sidebar.js') }}"></script>
+</body>
+</html>

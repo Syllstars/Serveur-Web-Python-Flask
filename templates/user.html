@@ -1,0 +1,317 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!----======== CSS ======== -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_user.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_sidebar.css') }}" />
+
+
+    <!----===== Boxicons CSS ===== -->
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+
+    <!--<title>Dashboard Sidebar Menu</title>-->
+    <title>MMOGC -- Générateur de classe</title>
+</head>
+<body>
+    <nav class="sidebar close">
+        <header>
+            <div class="image-text">
+                <span class="image">
+                    <img src="{{ url_for('static', filename = 'image/logo.png') }}" alt="">
+                </span>
+
+                <div class="text logo-text">
+                    <span class="name">MMOGC</span>
+                    <span class="profession">Class Generator</span>
+                </div>
+            </div>
+
+            <i class='bx bx-chevron-right toggle'></i>
+        </header>
+
+        <div class="menu-bar">
+            <div class="menu">
+
+
+                <ul class="menu-links">
+                    <li class="nav-link">
+                        <a href="acceuil">
+                            <i class='bx bx-home-alt icon'></i>
+                            <span class="text nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="generateur">
+                            <i class='bx bx-pie-chart-alt icon'></i>
+                            <span class="text nav-text">Générateur</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-link">
+                        <a href="boutique">
+                            <i class='bx bx-wallet icon'></i>
+                            <span class="text nav-text">Boutiques</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="bottom-content">
+                <li class="nav-link">
+                    <a href="user">
+                        <i class='bx bx-user icon'></i>
+                        <span class="text nav-text">User</span>
+                    </a>
+                </li>
+                <li class="nav-link">
+                    <a href="notification">
+                        <i class='bx bx-bell icon'></i>
+                        <span class="text nav-text">Notifications</span>
+                    </a>
+                </li>
+                {% if idGroup == 10 %}
+                <li class="nav-link">
+                    <a href="gestiondata">
+                        <i class='bx bx-data icon'></i>
+                        <span class="text nav-text">DataBase</span>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="">
+                    <a href="/logout">
+                        <i class='bx bx-log-out icon'></i>
+                        <span class="text nav-text">Logout</span>
+                    </a>
+                </li>
+
+                <li class="mode">
+                    <div class="sun-moon">
+                        <i class='bx bx-moon icon moon'></i>
+                        <i class='bx bx-sun icon sun'></i>
+                    </div>
+                    <span class="mode-text text">Dark mode</span>
+
+                    <div class="toggle-switch">
+                        <span class="switch"></span>
+                    </div>
+                </li>
+
+            </div>
+        </div>
+
+    </nav>
+    <section class="home">
+        <header class="en-tete">
+            <h1>Mon Espace Profil</h1> 
+        </header>
+        <div class="donnees-users">
+            <div class="profil">
+                <div class="image-profil">
+                    <img src="data:image/jpg;charset=ut-8;base64,{{ image_profil }}" alt="">
+                </div>
+                <div class="donnees-profil">
+                    <div class="nom">
+                        <p class="titre">
+                            Nom : 
+                        </p>
+                        <p class="donnees">
+                            {{ profil[0][1] }}
+                        </p>
+                    </div>
+                    <div class="e-mail">
+                        <p class="titre">
+                            E-mail : 
+                        </p>
+                        <p class="donnees">
+                            {{ profil[0][2] }}
+                        </p>
+                    </div>
+                    <div class="password">
+                        <p class="titre">
+                            Password : 
+                        </p>
+                        <p class="donnees">
+                            {{ profil[0][3] }}
+                        </p>
+                    </div>
+                    <div class="type-account">
+                        {% if profil[0][4] == 0 %}
+                            Compte Basic
+                        {% endif %}
+                        {% if profil[0][4] == 1 %}
+                            Compte Classic
+                        {% endif %}
+                        {% if profil[0][4] == 2 %}
+                            Compte Premium
+                        {% endif %}                       
+                    </div>
+                    <br /><br/>
+                    <div class="form-changer-donner">
+                        <h1>Changement des données utilisateurs</h1>                  
+                        <select name="value-to-change" id="value-select">
+                            <option value="">--Please choose an option--</option>
+                            <option value="name">Name</option>
+                            <option value="mail">E-Mail</option>
+                            <option value="password">Password</option>
+                            <option value="image">Profil Image</option>
+                        </select>
+                        <br />
+                        <div>
+                            <form class="changename" method="POST" action="replacename/{{ idUser }}">
+                                {{ form_user.hidden_tag() }}
+                                <p>
+                                    Changer votre nom d'utilisateur : 
+                                    <br />
+                                    {{ form_user.name(type="text", required="", class="texte", placeholder="New Name") }}
+                                    <br />
+                                    {{ form_user.recaptcha }}
+                                    {{ form_user.submit(class="button", type="submit", value="Envoyer")}}
+                                </p>
+                            </form>
+                            <form class="changemail" method="POST" action="replacemail/{{ idUser }}">
+                                {{ form_mail.hidden_tag() }}
+                                <p>
+                                    Changer votre e-mail : 
+                                    <br />
+                                    {{ form_mail.name(type="text", required="", class="texte", placeholder="New E-Mail") }}
+                                    <br />
+                                    {{ form_mail.recaptcha }}
+                                    {{ form_mail.submit(class="button", type="submit", value="Envoyer")}}
+                                </p>
+                            </form>
+                            <form class="changepassword" method="POST" action="replacepassword/{{ idUser }}">
+                                {{ form_pwd.hidden_tag() }}
+                                <p>
+                                    Changer votre mot de passe : 
+                                    <br />
+                                    {{ form_pwd.name(type="text", required="", class="texte", placeholder="New Password") }}
+                                    <br />
+                                    {{ form_pwd.recaptcha }}
+                                    {{ form_pwd.submit(class="button", type="submit", value="Envoyer")}}
+                                </p>
+                            </form>
+                            <form class="changeimage" method="POST" enctype="multipart/form-data" action="replaceimage/{{ idUser }}">
+                                {{ form_img.hidden_tag() }}
+                                <p>
+                                    Changer votre Photo de profil : 
+                                    <br />
+                                    {{ form_img.Image(type="file", required="", class="texte", placeholder="New Profil Image") }}
+                                    <br />
+                                    {{ form_img.recaptcha }}
+                                    {{ form_img.submit(class="button", type="submit", value="Envoyer")}}
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="classe">
+                Première Classe Créée
+                <div class="first-classe">
+                    <div class="nom">
+                        {{ firts_classe[0][0] }} ({{ firts_classe[0][1] }}) => {{ firts_classe[0][2] }}
+                    </div>
+                    <div class="options">
+                        <div>
+                            {% if firts_classe[0][3] == 1 %}
+                            <input type="checkbox" disabled checked />
+                            {% else %}
+                            <input type="checkbox" disabled />
+                            {% endif %}
+
+                            : Protéger le header contre les inclusion multiples
+                        </div>
+                        <div>
+                            {% if firts_classe[0][4] == 1 %}
+                            <input type="checkbox" disabled checked />
+                            {% else %}
+                            <input type="checkbox" disabled />
+                            {% endif %}
+
+                            : Générer un constructeur par défaut
+                        </div>
+                        <div>
+                            {% if firts_classe[0][5] == 1 %}
+                            <input type="checkbox" disabled checked />
+                            {% else %}
+                            <input type="checkbox" disabled />
+                            {% endif %}
+
+                            : Générer un déstructeur
+                        </div>
+                    </div>
+                    <div class="commentaire">
+                        <div class="data">
+                            <div class="auteur">
+                                {{ firts_classe[0][6] }}
+                            </div>
+                            <div class="date">
+                                {{ firts_classe[0][7] }}
+                            </div>
+                        </div>
+                        <div class="texte">
+                            {{ firts_classe[0][8] }}
+                        </div>
+                    </div>
+                </div>
+                Dernière Classe Créée
+                <div class="last-classe">
+                    <div class="nom">
+                        {{ last_classe[0][0] }} ({{ last_classe[0][1] }}) => {{ firts_classe[0][2] }}
+                    </div>
+                    <div class="options">
+                        <div>
+                            {% if last_classe[0][3] == 1 %}
+                            <input type="checkbox" disabled checked />
+                            {% else %}
+                            <input type="checkbox" disabled />
+                            {% endif %}
+
+                            : Protéger le header contre les inclusion multiples
+                        </div>
+                        <div>
+                            {% if last_classe[0][4] == 1 %}
+                            <input type="checkbox" disabled checked />
+                            {% else %}
+                            <input type="checkbox" disabled />
+                            {% endif %}
+
+                            : Générer un constructeur par défaut
+                        </div>
+                        <div>
+                            {% if last_classe[0][5] == 1 %}
+                            <input type="checkbox" disabled checked />
+                            {% else %}
+                            <input type="checkbox" disabled />
+                            {% endif %}
+
+                            : Générer un déstructeur
+                        </div>
+                    </div>
+                    <div class="commentaire">
+                        <div class="data">
+                            <div class="auteur">
+                                {{ last_classe[0][6] }}
+                            </div>
+                            <div class="date">
+                                {{ last_classe[0][7] }}
+                            </div>
+                        </div>
+                        <div class="texte">
+                            {{ last_classe[0][8] }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="{{ url_for('static', filename = 'js/sidebar.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'js/selectdonne.js') }}"></script>
+</body>
+</html>
