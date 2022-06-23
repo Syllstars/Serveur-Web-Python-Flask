@@ -100,9 +100,47 @@ class classe(db.Model):
     Protect_head = db.Column(db.Integer)
     Generat_head_default_construct = db.Column(db.Integer)
     Generat_head_destruct = db.Column(db.Integer)
+    Commentaire= db.Column(db.Integer)
     auteur = db.Column(db.Text)
     creation_data = db.Column(db.DateTime)
     class_role = db.Column(db.Text)
+    attribue = db.Column(db.Integer)
+    public = db.Column(db.Integer)
+    public1 = db.Column(db.Text)
+    public2 = db.Column(db.Text)
+    public3 = db.Column(db.Text)
+    public4 = db.Column(db.Text)
+    public5 = db.Column(db.Text)
+    public6 = db.Column(db.Text)
+    public7 = db.Column(db.Text)
+    public8 = db.Column(db.Text)
+    protected = db.Column(db.Integer)
+    protected1 = db.Column(db.Text)
+    protected2 = db.Column(db.Text)
+    protected3 = db.Column(db.Text)
+    protected4 = db.Column(db.Text)
+    protected5 = db.Column(db.Text)
+    protected6 = db.Column(db.Text)
+    protected7 = db.Column(db.Text)
+    protected8 = db.Column(db.Text)
+    private = db.Column(db.Integer)
+    private1 = db.Column(db.Text)
+    private2 = db.Column(db.Text)
+    private3 = db.Column(db.Text)
+    private4 = db.Column(db.Text)
+    private5 = db.Column(db.Text)
+    private6 = db.Column(db.Text)
+    private7 = db.Column(db.Text)
+    private8 = db.Column(db.Text)
+    methode = db.Column(db.Integer)
+    methode1 = db.Column(db.Text)
+    methode2 = db.Column(db.Text)
+    methode3 = db.Column(db.Text)
+    methode4 = db.Column(db.Text)
+    methode5 = db.Column(db.Text)
+    methode6 = db.Column(db.Text)
+    methode7 = db.Column(db.Text)
+    methode8 = db.Column(db.Text)
     idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
     idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
 
@@ -117,9 +155,47 @@ class classemodel(db.Model):
     Protect_head = db.Column(db.Integer)
     Generat_head_default_construct = db.Column(db.Integer)
     Generat_head_destruct = db.Column(db.Integer)
+    Commentaire = db.Column(db.Integer)
     auteur = db.Column(db.Text)
     creation_data = db.Column(db.DateTime)
     class_role = db.Column(db.Text)
+    attribue = db.Column(db.Integer)
+    public = db.Column(db.Integer)
+    public1 = db.Column(db.Text)
+    public2 = db.Column(db.Text)
+    public3 = db.Column(db.Text)
+    public4 = db.Column(db.Text)
+    public5 = db.Column(db.Text)
+    public6 = db.Column(db.Text)
+    public7 = db.Column(db.Text)
+    public8 = db.Column(db.Text)
+    protected = db.Column(db.Integer)
+    protected1 = db.Column(db.Text)
+    protected2 = db.Column(db.Text)
+    protected3 = db.Column(db.Text)
+    protected4 = db.Column(db.Text)
+    protected5 = db.Column(db.Text)
+    protected6 = db.Column(db.Text)
+    protected7 = db.Column(db.Text)
+    protected8 = db.Column(db.Text)
+    private = db.Column(db.Integer)
+    private1 = db.Column(db.Text)
+    private2 = db.Column(db.Text)
+    private3 = db.Column(db.Text)
+    private4 = db.Column(db.Text)
+    private5 = db.Column(db.Text)
+    private6 = db.Column(db.Text)
+    private7 = db.Column(db.Text)
+    private8 = db.Column(db.Text)
+    methode = db.Column(db.Integer)
+    methode1 = db.Column(db.Text)
+    methode2 = db.Column(db.Text)
+    methode3 = db.Column(db.Text)
+    methode4 = db.Column(db.Text)
+    methode5 = db.Column(db.Text)
+    methode6 = db.Column(db.Text)
+    methode7 = db.Column(db.Text)
+    methode8 = db.Column(db.Text)
     idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
     idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
 
@@ -145,7 +221,6 @@ class notifications(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.typeNotif
-
 mail = Mail(app)
 
 #-----------------------------------------
@@ -314,13 +389,13 @@ def user():
     # Faire la requête pour donner la date de la dernière classe créer et de la première classe créer
     cursor.execute("""DROP VIEW IF EXISTS lastClasse""")
     cursor.execute("CREATE VIEW lastClasse AS SELECT name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, MAX(creation_data), class_role FROM MaClasse")
-    cursor.execute("""SELECT name, classe_mere, Protect_head, Generat_head_default_construct, 
+    cursor.execute("""SELECT name, classe_mere, specialiter, Protect_head, Generat_head_default_construct, 
         Generat_head_destruct, auteur, MAX(creation_data), class_role FROM MaClasse""")
     dernière_classe = cursor.fetchall()
 
     cursor.execute("""DROP VIEW IF EXISTS firstClasse""")
     cursor.execute("CREATE VIEW firstClasse AS SELECT name, classe_mere, Protect_head, Generat_head_default_construct, Generat_head_destruct, auteur, MIN(creation_data), class_role FROM MaClasse")
-    cursor.execute("""SELECT name, classe_mere, Protect_head, Generat_head_default_construct, 
+    cursor.execute("""SELECT name, classe_mere, specialiter, Protect_head, Generat_head_default_construct, 
         Generat_head_destruct, auteur, MIN(creation_data), class_role FROM MaClasse""")
     première_classe = cursor.fetchall()
 
@@ -569,6 +644,9 @@ def genererh(idClass):
     TexteH = ""  
     #Génération des données a écrire dans le fichier
     #Ecriture du fichier
+    #Zone de Commentaire
+    if (donnees[0][6]== 1):
+        TexteH += "/*\nAuteur : " + str(donnees[0][7]) + "\nDate de creation : " + str(donnees[0][8]) + "\n\nRole : \n" + str(donnees[0][9]) + "\n*/\n"
     #Zone d'entête et ouverture de la classe
     if (donnees[0][3] == 1):
         TexteH += "#ifndef " + str(donnees[0][1]) + "\n" + "#define " + str(donnees[0][1]) + "\n"
@@ -585,30 +663,31 @@ def genererh(idClass):
         TexteH +=  "     " + str(donnees[0][1]) + "(unsigned int);     //Attribue pour le constucteur\n"
     if (donnees[0][5] == 1):
         TexteH += "     ~" + str(donnees[0][1]) + "(void);     //Attribue pour le destrucuter\n"
-    if (donnees[0][37] == 1):
-        for i in range(38, 46):
+    if (donnees[0][38] == 1):
+        for i in range(39, 47):
             if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
                 TexteH += "     void " + str(donnees[0][i]) + "();\n"
     #Ajout des attribues
     TexteH += "\n"
-    if (donnees[0][9] == 1):
+    if (donnees[0][11] == 1):
         #Zone public
-        if(donnees[0][10] == 1):
-            for i in range(11, 19):
+        if(donnees[0][12] == 1):
+            for i in range(13, 21):
                 if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
-                    TexteH += "     int "+ str(donnees[0][i]) + ";\n"
+                    TexteH += "     " + str(donnees[0][i]) + ";\n"
         #Zone proteger
-        if(donnees[0][19] == 1):
+        if(donnees[0][21] == 1):
             TexteH += "\n     protected:     //Attribue Proteger\n"
-            for i in range(20, 28):
+            for i in range(22, 30):
                 if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
-                    TexteH += "     int "+ str(donnees[0][i]) + ";\n"
+                    TexteH += "     " + str(donnees[0][i]) + ";\n"
         #Zone priver
-        if(donnees[0][28] == 1):
+        
+        if(donnees[0][30] == 1):
             TexteH += "\n     private:     //Attribue Priver\n\n"
-            for i in range(29, 37):
+            for i in range(31, 39):
                 if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
-                    TexteH += "     int "+ str(donnees[0][i]) + ";\n"
+                    TexteH += "     " + str(donnees[0][i]) + ";\n"
 
     TexteH += "};\n"
     if (donnees[0][3] == 1):
@@ -643,8 +722,8 @@ def generercpp(idClass):
     if (donnees[0][5] == 1):
         TexteCPP += "//Methode pour le destructeur\n"
         TexteCPP += str(donnees[0][1]) + "::~" + str(donnees[0][1]) + "(void)\n{\n}\n\n"
-    if (donnees[0][37] == 1):
-        for i in range(38, 46):
+    if (donnees[0][39] == 1):
+        for i in range(40, 48):
             if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
                 TexteCPP += "void " + str(donnees[0][1]) + "::" + str(donnees[0][i]) + "()\n{\n     //Empty area to complete\n}\n\n"
     #Ecriture du fichier
@@ -735,61 +814,147 @@ def generer():
         if (request.form['name'] != '' and demande_valider == True):
             name = request.form['name']
             classe_mere = request.form['class_mere']
+            specialiter = request.form['specialiter']
             Protect_head = request.form.get('Protect_head')
             default_constructeur = request.form.get('Generat_head_default_construct')
             head_destructeur = request.form.get('Generat_head_destruct')
             auteur = request.form['auteur']
-            commentaire = request.form['class_role']
-            attribue = request.form.get('attribue')
+            demande_commentaire = request.form.get('Commentaire')
+            if (demande_commentaire == "1"):
+                commentaire = request.form['class_role']
+                attribue = request.form.get('attribue')
+            elif (request.form.get('Commentaire') == None):
+                commentaire = ""
+                attribue = ""
             public = request.form.get('public')
             protected = request.form.get('protected')
             private = request.form.get('private')
             public_var = []
+            type_public_var = []
+            nom_var_public = []
             private_var = []
+            type_private_var = []
+            nom_var_private = []
             protect_var = []
-            methode_var = []
+            type_protect_var = []
+            nom_var_protect = []
+            methode_var = []  
+
             methode = request.form.get('methode')
             for i in range(8):
                 public_var.append((""))
+                type_public_var.append((""))
                 protect_var.append((""))
                 private_var.append((""))
                 methode_var.append((""))
             if (attribue == "1"): 
                 if (public == "1"):
-                    public_var[0] = request.form['public1']
-                    public_var[1] = request.form['public2']
-                    public_var[2] = request.form['public3']
-                    public_var[3] = request.form['public4']
-                    public_var[4] = request.form['public5']
-                    public_var[5] = request.form['public6']
-                    public_var[6] = request.form['public7']
-                    public_var[7] = request.form['public8']
+                    #Attribue public 1
+                    type_public_var[0] = request.form['type_public1']
+                    nom_var_public[0] = request.form['public1']
+                    public_var[0] = type_public_var[0] + " " + nom_var_public[0]
+                    #Attribue public 2
+                    type_public_var[1] = request.form['type_public2']
+                    nom_var_public[1] = request.form['public2']
+                    public_var[1] = type_public_var[1] + " " + nom_var_public[1]
+                    #Attribue public 3
+                    type_public_var[2] = request.form['type_public3']
+                    nom_var_public[2] = request.form['public3']
+                    public_var[2] = type_public_var[2] + " " + nom_var_public[2]
+                    #Attribue public 4
+                    type_public_var[3] = request.form['type_public4']
+                    nom_var_public[3] = request.form['public4']
+                    public_var[3] = type_public_var[3] + " " + nom_var_public[3]
+                    #Attribue public 5
+                    type_public_var[4] = request.form['type_public5']
+                    nom_var_public[4] = request.form['public5']
+                    public_var[4] = type_public_var[4] + " " + nom_var_public[4]
+                    #Attribue public 6
+                    type_public_var[5] = request.form['type_public6']
+                    nom_var_public[5] = request.form['public6']
+                    public_var[5] = type_public_var[5] + " " + nom_var_public[5]
+                    #Attribue public 7
+                    type_public_var[6] = request.form['type_public7']
+                    nom_var_public[6] = request.form['public7']
+                    public_var[6] = type_public_var[6] + " " + nom_var_public[6]
+                    #Attribue public 8
+                    type_public_var[7] = request.form['type_public8']
+                    nom_var_public[7] = request.form['public8']
+                    public_var[7] = type_public_var[7] + " " + nom_var_public[7]
                 elif (request.form.get('public') == None):
                     for i in range(8):
                         public_var[i] = ""
                     public = 0 
                 if (protected == "1"):
-                    protect_var[0] = request.form['protected1']
-                    protect_var[1] = request.form['protected2']
-                    protect_var[2] = request.form['protected3']
-                    protect_var[3] = request.form['protected4']
-                    protect_var[4] = request.form['protected5']
-                    protect_var[5] = request.form['protected6']
-                    protect_var[6] = request.form['protected7']
-                    protect_var[7] = request.form['protected8']
+                    #Attribue proteger 1
+                    type_protect_var[0] = request.form['type_protected1']
+                    nom_var_protect[0] = request.form['protected1']
+                    protect_var[0] = type_protect_var[0] + " " + nom_var_protect[0]
+                    #Attribue proteger 2
+                    type_protect_var[1] = request.form['type_protected2']
+                    nom_var_protect[1] = request.form['protected2']
+                    protect_var[1] = type_protect_var[1] + " " + nom_var_protect[1]
+                    #Attribue proteger 3
+                    type_protect_var[2] = request.form['type_protected3']
+                    nom_var_protect[2] = request.form['protected3']
+                    protect_var[2] = type_protect_var[2] + " " + nom_var_protect[2]
+                    #Attribue proteger 4
+                    type_protect_var[3] = request.form['type_protected4']
+                    nom_var_protect[3] = request.form['protected4']
+                    protect_var[3] = type_protect_var[3] + " " + nom_var_protect[3]
+                    #Attribue proteger 5
+                    type_protect_var[4] = request.form['type_protected5']
+                    nom_var_protect[4] = request.form['protected5']
+                    protect_var[4] = type_protect_var[4] + " " + nom_var_protect[4]
+                    #Attribue proteger 6
+                    type_protect_var[5] = request.form['type_protected6']
+                    nom_var_protect[5] = request.form['protected6']
+                    protect_var[5] = type_protect_var[5] + " " + nom_var_protect[5]
+                    #Attribue proteger 7
+                    type_protect_var[6] = request.form['type_protected7']
+                    nom_var_protect[6] = request.form['protected7']
+                    protect_var[6] = type_protect_var[6] + " " + nom_var_protect[6]
+                    #Attribue proteger 8
+                    type_protect_var[7] = request.form['type_protected8']
+                    nom_var_protect[7] = request.form['protected8']
+                    protect_var[7] = type_protect_var[7] + " " + nom_var_protect[7]
                 elif (request.form.get('protected') == None):
                     for i in range(8):
                         protect_var[i] = ""
                     protected = 0
                 if (private == "1"):
-                    private_var[0] = request.form['private1']
-                    private_var[1] = request.form['private2']
-                    private_var[2] = request.form['private3']
-                    private_var[3] = request.form['private4']
-                    private_var[4] = request.form['private5']
-                    private_var[5] = request.form['private6']
-                    private_var[6] = request.form['private7']
-                    private_var[7] = request.form['private8']
+                    #Attribue private 1
+                    type_private_var[0] = request.form['type_private1']
+                    nom_var_private[0] = request.form['private1']
+                    private_var[0] = type_private_var[0] + " " + nom_var_private[0] 
+                    #Attribue private 2
+                    type_private_var[1] = request.form['type_private2']
+                    nom_var_private[1] = request.form['private2']
+                    private_var[1] = type_private_var[1] + " " + nom_var_private[1] 
+                    #Attribue private 3
+                    type_private_var[2] = request.form['type_private3']
+                    nom_var_private[2] = request.form['private3']
+                    private_var[2] = type_private_var[2] + " " + nom_var_private[2] 
+                    #Attribue private 4
+                    type_private_var[3] = request.form['type_private4']
+                    nom_var_private[3] = request.form['private4']
+                    private_var[3] = type_private_var[3] + " " + nom_var_private[3] 
+                    #Attribue private 5
+                    type_private_var[4] = request.form['type_private5']
+                    nom_var_private[4] = request.form['private5']
+                    private_var[4] = type_private_var[4] + " " + nom_var_private[4] 
+                    #Attribue private 6
+                    type_private_var[5] = request.form['type_private6']
+                    nom_var_private[5] = request.form['private6']
+                    private_var[5] = type_private_var[5] + " " + nom_var_private[5] 
+                    #Attribue private 7
+                    type_private_var[6] = request.form['type_private7']
+                    nom_var_private[6] = request.form['private7']
+                    private_var[6] = type_private_var[6] + " " + nom_var_private[6] 
+                    #Attribue private 8
+                    type_private_var[7] = request.form['type_private8']
+                    nom_var_private[7] = request.form['private8']
+                    private_var[7] = type_private_var[7] + " " + nom_var_private[7] 
                 elif (request.form.get('private') == None):
                     for i in range(8):
                         private_var[i] = ""
@@ -818,22 +983,22 @@ def generer():
                 methode = 0    
             User = session['user']['idUser']
             list_classe = []
-            list_classe.append((name, classe_mere, Protect_head,
-                                default_constructeur, head_destructeur, auteur, commentaire, attribue, 
+            list_classe.append((name, classe_mere, specialiter, Protect_head,
+                                default_constructeur, head_destructeur, demande_commentaire, auteur, commentaire, attribue, 
                                 public, public_var[0], public_var[1], public_var[2], public_var[3], public_var[4], public_var[5], public_var[6], public_var[7], 
                                 protected, protect_var[0], protect_var[1], protect_var[2], protect_var[3], protect_var[4], protect_var[5], protect_var[6], protect_var[7],
                                 private, private_var[0], private_var[1], private_var[2], private_var[3], private_var[4], private_var[5], private_var[6], private_var[7],
                                 methode, methode_var[0], methode_var[1], methode_var[2], methode_var[3], methode_var[4], methode_var[5], methode_var[6], methode_var[7],
                                 User))
             #Ecriture de la classe sur la base de données
-            cursor.executemany("""INSERT INTO classe(name, classe_mere, Protect_head, Generat_head_default_construct, 
-                Generat_head_destruct, auteur, creation_data, class_role, attribue, 
+            cursor.executemany("""INSERT INTO classe(name, classe_mere, specialiter, Protect_head, Generat_head_default_construct, 
+                Generat_head_destruct, Commentaire, auteur, creation_data, class_role, attribue, 
                 public, public1, public2, public3, public4, public5, public6, public7, public8, 
                 protected, protected1, protected2, protected3, protected4, protected5, protected6, protected7, protected8,
                 private, private1, private2, private3, private4, private5, private6, private7, private8,
                 methode, methode1, methode2, methode3, methode4, methode5, methode6, methode7, methode8,
                 idUser, idUserUnban) 
-                VALUES(?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)""", list_classe)  
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)""", list_classe)  
             conn.commit()
             #Ajout d'une classe sur le compteur de l'utilisateur
             nbclasse = validation[0][0] + 1
