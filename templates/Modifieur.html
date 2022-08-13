@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<!-- Coding by CodingLab | www.codinglabweb.com -->
+<html lang="en">
+
+<head>
+    <!----======== Meta ======== -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Pontlevoy Maxime">
+    <meta name="description" content="Web Site for generate c++ class">
+    <meta name="keyword" content="C++, classe C++, Web Site, Python, SQlite3, Flask">
+
+    <!----======== CSS ======== -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style_modificateur.css') }}">
+
+    <!----===== Boxicons CSS ===== -->
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+
+    <!--<title>Dashboard Sidebar Menu</title>-->
+    <title>MMOGC -- Générateur de classe</title>
+</head>
+
+<body>
+    <nav class="sidebar close">
+        <header>
+            <div class="image-text">
+                <span class="image">
+                    <img src="{{ url_for('static', filename = 'image/logo.png') }}" alt="">
+                </span>
+
+                <div class="text logo-text">
+                    <span class="name">MMOGC</span>
+                    <span class="profession">Class Generator</span>
+                </div>
+            </div>
+
+            <i class='bx bx-chevron-right toggle'></i>
+        </header>
+
+        <div class="menu-bar">
+            <div class="menu">
+
+
+                <ul class="menu-links">
+                    <li class="nav-link">
+                        <a href="/acceuil">
+                            <i class='bx bx-home-alt icon'></i>
+                            <span class="text nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="/generateur">
+                            <i class='bx bx-pie-chart-alt icon'></i>
+                            <span class="text nav-text">Générateur</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-link">
+                        <a href="/boutique">
+                            <i class='bx bx-wallet icon'></i>
+                            <span class="text nav-text">Boutiques</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="bottom-content">
+                <li class="nav-link">
+                    <a href="/user">
+                        <i class='bx bx-user icon'></i>
+                        <span class="text nav-text">User</span>
+                    </a>
+                </li>
+                <li class="nav-link">
+                    <a href="/notification">
+                        <i class='bx bx-bell icon'></i>
+                        <span class="text nav-text">Notifications</span>
+                    </a>
+                </li>
+                {% if idGroup == 10 %}
+                <li class="nav-link">
+                    <a href="/gestiondata">
+                        <i class='bx bx-data icon'></i>
+                        <span class="text nav-text">DataBase</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% if idGroup == 10 %}
+                <li class="nav-link">
+                    <a href="terminal">
+                        <i class='bx bx-terminal icon'></i>
+                        <span class="text nav-text">Terminal</span>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="">
+                    <a href="/logout">
+                        <i class='bx bx-log-out icon'></i>
+                        <span class="text nav-text">Logout</span>
+                    </a>
+                </li>
+
+                <li class="mode">
+                    <div class="sun-moon">
+                        <i class='bx bx-moon icon moon'></i>
+                        <i class='bx bx-sun icon sun'></i>
+                    </div>
+                    <span class="mode-text text">Dark mode</span>
+
+                    <div class="toggle-switch">
+                        <span class="switch"></span>
+                    </div>
+                </li>
+
+            </div>
+        </div>
+
+    </nav>
+
+    <section class="home">
+        <div class="zone-modifieur">
+            <!--Zone de classe en cours de modification-->
+            <div class="donnees-en-cours-de-modification">
+                <div class="titre-module-donnees">
+                    Classe en cours de modification
+                </div>
+                <div class="liste-donnees">
+                    <div class="en-tete">
+                        {{ donnees[0][1] }} ({{ donnees[0][2] }}) => {{ donnees[0][3] }}
+                    </div>
+                    <div class="options">
+                        <div>
+                            {% if donnees[0][4] == 1 %}
+                            <input type="checkbox" disabled checked />
+                            {% else %}
+                            <input type="checkbox" disabled />
+                            {% endif %}
+
+                            : Protéger le header contre les inclusion multiples
+                        </div>
+                        <div>
+                            {% if donnees[0][5] == 1 %}
+                            <input type="checkbox" disabled checked />
+                            {% else %}
+                            <input type="checkbox" disabled />
+                            {% endif %}
+
+                            : Générer un constructeur par défaut
+                        </div>
+                        <div>
+                            {% if donnees[0][6] == 1 %}
+                            <input type="checkbox" disabled checked />
+                            {% else %}
+                            <input type="checkbox" disabled />
+                            {% endif %}
+
+                            : Générer un déstructeur
+                        </div>
+                    </div>
+                    <div class="parametre">
+                        {% if donnees[0][11] == 1 %}
+                        <div class="attribue">
+                            {% if donnees[0][12] == 1%}
+                            <div class="public">
+                                Public :
+                                {% for i in range(13, 21) %}
+                                {% if (donnees[0][i] != "") and (donnees[0][i] != None) %}
+                                {{ donnees[0][i] }};
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if donnees[0][21] == 1 %}
+                            <div class="protected">
+                                Proteger :
+                                {% for i in range(22, 30) %}
+                                {% if (donnees[0][i] != "") and (donnees[0][i] != None) %}
+                                {{ donnees[0][i] }};
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if donnees[0][30] == 1 %}
+                            <div class="private">
+                                Priver :
+                                {% for i in range(31, 39) %}
+                                {% if (donnees[0][i] != "") and (donnees[0][i] != None) %}
+                                {{ donnees[0][i] }};
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% if donnees[0][39] == 1%}
+                        <div class="methode">
+                            Méthodes:
+                            {% for i in range(40, 48)%}
+                            {% if (donnees[0][i] != "") and (donnees[0][i] != None) %}
+                            {{ donnees[0][i] }};
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if donnees[0][7] == 1 %}
+                    <div class="commentaire">
+                        <div class="donnees">
+                            <div class="auteur">
+                                {{ donnees[0][8] }}
+                            </div>
+                            <div class="date">
+                                {{ donnees[0][9] }}
+                            </div>
+                        </div>
+                        <div class="commentaire">
+                            {{ donnees[0][10] }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+
+            <!-- Zone du Générateur-->
+            <div class="Generateur-classe">
+                <div class="Titre-form">
+                    <h1>Générateur de Classe</h1>
+                </div>
+                <form action="{{ url_for('generer') }}" method="post">
+                    {{ form_classe.hidden_tag() }}
+                    <div class="bouton">
+                        {{ form_classe.submit(class="button-envoyer-class") }}
+                    </div>
+                    <div class="Definition-classe">
+                        <p>Définition de la classe</p>
+
+                        <div class="zone-remplissage">
+                            Name :
+                            {{ form_classe.name(type="text", required="") }}
+                        </div>
+                        <div class="zone-remplissage">
+                            Classe mère :
+                            {{ form_classe.class_mere(type="text") }}
+                        </div>
+                        <div class="zone-remplissage">
+                            Spécialité :
+                            {{ form_classe.specialiter(type="text") }}
+                        </div>
+
+                    </div>
+                    <div class="toutes-options">
+                        <div class="gauche">
+                            <div class="Options-classes">
+                                <p>Options</p>
+                                <div class="Option-checkbox">
+
+                                    <div class="zone-remplissage">
+                                        {{ form_classe.Protect_head(type="checkbox", value="1") }}
+                                        Protéger le header contre les inclusions multiples
+                                    </div>
+
+                                    <div class="zone-remplissage">
+                                        {{ form_classe.Generat_head_default_construct(type="checkbox", value="1") }}
+                                        Générer un contructeur par default
+                                    </div>
+
+                                    <div class="zone-remplissage">
+                                        {{ form_classe.Generat_head_destruct(type="checkbox", value="1") }}
+                                        Générer un destructeur
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="Commentaire close">
+                                <div class="name">
+                                    {{ form_classe.Commentaire(type="checkbox", class="checkbox", id="comment",
+                                    value="1",
+                                    onclick="checkfunctionComment()") }}
+                                    <p>Commentaire</p>
+                                </div>
+                                <div class="zone-remplissage">
+                                    Auteur :
+                                    {{ form_classe.auteur(type="text") }}
+                                </div>
+                                <div class="zone-remplissage">
+                                    Date de creation :
+                                    {{ form_classe.creation_data(type="date") }}
+                                </div>
+                                <div class="zone-remplissage">
+                                    Commentaire sur la classe :
+                                    {{ form_classe.class_role(class="comment-area", maxlength="500", spellcheck=true) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="droite">
+                            <div class="Options-classes">
+                                <p>Définition des attribut et des méthodes</p>
+                                <div class="attribue">
+                                    <div class="titre">
+                                        {{ form_classe.attribue(type="checkbox", class="checkbox", id="attribue",
+                                        value="1",
+                                        onclick="checkfunctionattribue()")}}
+                                        Affectation d'attribue a la classe
+                                    </div>
+                                    <div class="Option-checkbox close">
+                                        <div class="role-public">
+                                            <div class="name">
+                                                {{ form_classe.public(type="checkbox", class="checkbox",
+                                                id="zonePublic",
+                                                value="1", onclick="checkfunctionpublic()") }}
+                                                <p>Public</p>
+                                            </div>
+                                            <div class="role">
+                                                <div class="zone-remplissage">
+                                                    Attribut Public 1 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_public1(id="zonepublic",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.public1(type="text", id="zonepublic",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Public 2 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_public2(id="zonepublic",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.public2(type="text", id="zonepublic",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Public 3 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_public3(id="zonepublic",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.public3(type="text", id="zonepublic",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Public 4 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_public4(id="zonepublic",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.public4(type="text", id="zonepublic",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Public 5 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_public5(id="zonepublic",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.public5(type="text", id="zonepublic",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Public 6 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_public6(id="zonepublic",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.public6(type="text", id="zonepublic",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Public 7 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_public7(id="zonepublic",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.public7(type="text", id="zonepublic",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Public 8 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_public8(id="zonepublic",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.public8(type="text", id="zonepublic",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="role-proteger">
+                                            <div class="name">
+                                                {{ form_classe.protected(type="checkbox", class="checkbox",
+                                                id="Proteger",
+                                                value="1", onclick="checkfunctionproteger()") }}
+                                                <p>Proteger</p>
+                                            </div>
+                                            <div class="role">
+                                                <div class="zone-remplissage">
+                                                    Attribut Proteger 1 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_protected1(id="zoneprotected",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.protected1(type="text", id="zoneprotected",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Proteger 2 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_protected2(id="zoneprotected",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.protected2(type="text", id="zoneprotected",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Proteger 3 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_protected3(id="zoneprotected",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.protected3(type="text", id="zoneprotected",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Proteger 4 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_protected4(id="zoneprotected",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.protected4(type="text", id="zoneprotected",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Proteger 5 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_protected5(id="zoneprotected",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.protected5(type="text", id="zoneprotected",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Proteger 6 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_protected6(id="zoneprotected",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.protected6(type="text", id="zoneprotected",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Proteger 7 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_protected7(id="zoneprotected",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.protected7(type="text", id="zoneprotected",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Proteger 8 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_protected8(id="zoneprotected",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.protected8(type="text", id="zoneprotected",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="role-priver">
+                                            <div class="name">
+                                                {{ form_classe.private(type="checkbox", class="checkbox", id="Private",
+                                                value="1", onclick="checkfunctionprivate()") }}
+                                                <p>Priver</p>
+                                            </div>
+                                            <div class="role">
+                                                <div class="zone-remplissage">
+                                                    Attribut Priver 1 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_private1(id="zoneprivate",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.private1(type="text", id="zoneprivate",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Priver 2 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_private2(id="zoneprivate",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.private2(type="text", id="zoneprivate",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Priver 3 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_private3(id="zoneprivate",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.private3(type="text", id="zoneprivate",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Priver 4 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_private4(id="zoneprivate",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.private4(type="text", id="zoneprivate",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Priver 5 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_private5(id="zoneprivate",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.private5(type="text", id="zoneprivate",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Priver 6 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_private6(id="zoneprivate",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.private6(type="text", id="zoneprivate",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Priver 7 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_private7(id="zoneprivate",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.private7(type="text", id="zoneprivate",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="zone-remplissage">
+                                                    Attribut Priver 8 :
+                                                    <div class="data">
+                                                        {{ form_classe.type_private8(id="zoneprivate",
+                                                        **{'disabled':'true'}) }}
+                                                        {{ form_classe.private8(type="text", id="zoneprivate",
+                                                        **{'disabled':
+                                                        'true'}) }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="methode">
+                                    <div class="titre">
+                                        {{ form_classe.methode(type="checkbox", class="checkbox", id="methode",
+                                        value="1",
+                                        onclick="checkfunctionmethode()")}}
+                                        Affectation de methode a la classe
+                                    </div>
+                                    <div class="Option-checkbox close">
+                                        <div class="role">
+                                            <div class="zone-remplissage">
+                                                Méthode 1 :
+                                                {{ form_classe.methode1(type="text", id="zonemethode", **{'disabled':
+                                                'true'}) }}
+                                            </div>
+                                            <div class="zone-remplissage">
+                                                Méthode 2 :
+                                                {{ form_classe.methode2(type="text", id="zonemethode", **{'disabled':
+                                                'true'}) }}
+                                            </div>
+                                            <div class="zone-remplissage">
+                                                Méthode 3 :
+                                                {{ form_classe.methode3(type="text", id="zonemethode", **{'disabled':
+                                                'true'}) }}
+                                            </div>
+                                            <div class="zone-remplissage">
+                                                Méthode 4 :
+                                                {{ form_classe.methode4(type="text", id="zonemethode", **{'disabled':
+                                                'true'}) }}
+                                            </div>
+                                            <div class="zone-remplissage">
+                                                Méthode 5 :
+                                                {{ form_classe.methode5(type="text", id="zonemethode", **{'disabled':
+                                                'true'}) }}
+                                            </div>
+                                            <div class="zone-remplissage">
+                                                Méthode 6 :
+                                                {{ form_classe.methode6(type="text", id="zonemethode", **{'disabled':
+                                                'true'}) }}
+                                            </div>
+                                            <div class="zone-remplissage">
+                                                Méthode 7 :
+                                                {{ form_classe.methode7(type="text", id="zonemethode", **{'disabled':
+                                                'true'}) }}
+                                            </div>
+                                            <div class="zone-remplissage">
+                                                Méthode 8 :
+                                                {{ form_classe.methode8(type="text", id="zonemethode", **{'disabled':
+                                                'true'}) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <script src="{{ url_for('static', filename = 'js/sidebar.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'js/activatearea.js') }}"></script>
+</body>
+
+</html>
