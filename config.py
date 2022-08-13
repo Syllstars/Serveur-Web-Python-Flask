@@ -1,3 +1,8 @@
+from werkzeug.exceptions import HTTPException, default_exceptions, Aborter
+import werkzeug.exceptions as ex
+from flask import Flask, abort
+
+
 class Config():
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
@@ -15,5 +20,7 @@ class Config():
     MAIL_ASCII_ATTACHMENTS = False
 
 
-
+class PayementRequired(ex.HTTPException):
+    code = 402
+    description = '<p>You Will pay for this !</p>'
 
