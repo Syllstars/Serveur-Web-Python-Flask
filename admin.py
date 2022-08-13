@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from enum import unique
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
@@ -7,6 +8,8 @@ from sqlalchemy.sql import text
 from datetime import datetime
 from random import *
 import sqlite3 as sql
+import numpy
+import random
 
 app = Flask(__name__)
 # name of your database; add path if necessary
@@ -112,6 +115,7 @@ class classe(db.Model):
     methode8 = db.Column(db.Text)
     idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
     idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
+    image_classe = db.Column(db.LargeBinary)
 
     def __repr__(self):
         return '<User %r>' % self.name
@@ -168,6 +172,7 @@ class classemodel(db.Model):
     methode8 = db.Column(db.Text)
     idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
     idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
+    image_classe = db.Column(db.LargeBinary)
 
     def __repr__(self):
         return '<User %r>' % self.name
@@ -192,8 +197,28 @@ class notifications(db.Model):
     def __repr__(self):
         return '<User %r>' % self.typeNotif
 
+class commande(db.Model):
+    idCommande = db.Column(db.Integer, primary_key=True, unique=True)
+    Commande = db.Column(db.Text)
+    Reponse = db.Column(db.Text)
+
+    def __repr__(self):
+        return '<User %r>' % self.Commande
+
+class demandeCommande(db.Model):
+    idDemandeCommande = db.Column(db.Integer, primary_key=True, unique=True)
+    idCommande = db.Column(db.Integer, db.ForeignKey('commande.idCommande'))
+
+    def __repr__(self):
+        return '<User %r>' % self.idDemandeCommande
+
+
 def convert_pic():
-    filename = "profile.jpg"
+    x = random.randint(1,2)
+    if x == 1:
+        filename = "profil1.jpg"
+    if x == 2:
+        filename = "profil2.jpg"
     with open(filename, 'rb') as file:       
         photo = file.read()
     return photo
@@ -298,6 +323,7 @@ def creation_class(conn):
         methode8 TEXT,
         idUser INTEGER,
         idUserUnban INTEGER,
+        image_classe BLOB,
 	    FOREIGN KEY(idUser) REFERENCES user(idUsers),
         FOREIGN KEY(idUserUnban) REFERENCES user_banni(idUsers)
         )
@@ -358,6 +384,7 @@ def creation_class_model(conn):
         methode8 TEXT,
         idUser INTEGER,
         idUserUnban INTEGER,
+        image_classe BLOB,
 	    FOREIGN KEY(idUser) REFERENCES user(idUsers),
         FOREIGN KEY(idUserUnban) REFERENCES user_banni(idUsers)
         )
@@ -387,12 +414,31 @@ def creation_notif(conn):
         Commentaire TEXT,
         idUser INTEGER,
         idUserUnban INTEGER,
-        FOREIGN KEY(idUser) REFERENCES user(idUsers)
+        FOREIGN KEY(idUser) REFERENCES user(idUsers),
         FOREIGN KEY(idUserUnban) REFERENCES user_banni(idUsers)
         )
     """)
     conn.commit()
 
+def creation_commande(conn):
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS commande(
+        idCommande INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        Commande TEXT,
+        Reponse TEXT
+        )
+    """)
+
+def creation_demandecommande(conn):
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS demandecommande(
+        idDemandeCommande INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        idCommande INTEGER,
+        FOREIGN KEY(idCommande) REFERENCES commande(idCommande)
+        )
+    """)
 
 def InitDataBase():
     try:
@@ -405,21 +451,22 @@ def InitDataBase():
         creation_class(conn)
         creation_class_model(conn)
         creation_notif(conn)
+        creation_commande(conn)
+        creation_demandecommande(conn)
         creation_connexion_classmodel_user(conn)
         cursor.execute("""SELECT * FROM user""")
         rows_user = cursor.fetchall()
-        photo = convert_pic()
         if rows_user == []:
             users = []
-            users.append(("Maxime PONTLEVOY", "maxime.pontlevoy@orange.fr", 157365218, 2, 4, photo, 1))
-            users.append(("Support", "mpontlevoy2001@gmail.com", 124864582, 2, 4, photo, 2))
-            users.append(("Commercial", "pmaxime2001@gmail.com", 811483498, 1, 0, photo, 3))
-            users.append(("Olivier CORRIO", "olivier.corrio@univ-brest.fr", 123456789, 0, 4, photo, 4))
-            users.append(("Client1", "client.personne@gmail.com", 0000, 1, 0, photo, 4))
-            users.append(("Jean PHILIPPE","jean.philippe@gmail.com", 1846943, 0, 6, photo, 4))
-            users.append(("Marc ABSIDE","marc.abside158@gmail.com", 12946285, 0, 9, photo, 4))
-            users.append(("Jules CENDRIN","jules185.18cendrin15@gmail.com", 1864856, 0, 0, photo, 4))
-            users.append(("Arthur AVNANT","avnant.arthur6485@gmail.com", 12584682, 1, 0, photo, 4))
+            users.append(("Maxime PONTLEVOY", "maxime.pontlevoy@orange.fr", 157365218, 2, 4, convert_pic(), 1))
+            users.append(("Support", "mpontlevoy2001@gmail.com", 124864582, 2, 4, convert_pic(), 2))
+            users.append(("Commercial", "pmaxime2001@gmail.com", 811483498, 1, 0, convert_pic(), 3))
+            users.append(("Olivier CORRIO", "olivier.corrio@univ-brest.fr", 123456789, 0, 4, convert_pic(), 4))
+            users.append(("Client1", "client.personne@gmail.com", 0000, 1, 0, convert_pic(), 4))
+            users.append(("Jean PHILIPPE","jean.philippe@gmail.com", 1846943, 0, 6, convert_pic(), 4))
+            users.append(("Marc ABSIDE","marc.abside158@gmail.com", 12946285, 0, 9, convert_pic(), 4))
+            users.append(("Jules CENDRIN","jules185.18cendrin15@gmail.com", 1864856, 0, 0, convert_pic(), 4))
+            users.append(("Arthur AVNANT","avnant.arthur6485@gmail.com", 12584682, 1, 0, convert_pic(), 4))
             cursor.executemany("""INSERT INTO user(name, email, password, vip_account, nb_classe_Faite, image_profil, idgroupe) 
                 VALUES(?, ?, ?, ?, ?, ?, ?)""", users)
 
@@ -438,33 +485,33 @@ def InitDataBase():
         rows_classe = cursor.fetchall()
         if rows_classe == []:
             clas = []
-            clas.append(("Personnage", "Entite", "", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des personnages", 1, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
-            clas.append(("Chasseur", "Personnage", "discretion", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Chasseurs", 1, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
-            clas.append(("Chevalier", "Personnage", "force", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des chevaliers", 1, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
-            clas.append(("Mage", "personnage", "magie", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Mages", 1, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
-            clas.append(("Démon", "Entité", "force", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Démons", 2, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
-            clas.append(("Gobelin", "Démon", "discretion", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Gobelins", 2, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
-            clas.append(("Ogre", "Démon", "force", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Ogres", 2, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
-            clas.append(("Orc", "Démon", "force", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Orc", 2, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme"))
-            clas.append(("Maison", "Batimnt", "", 1, 1, 1, 1, "Olivier CORRIO", "Classe général de la maison", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Salon", "Maison", "", 1, 1, 1, 1, "Olivier CORRIO", "Pièce 1", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Cuisine", "Maison", "", 1, 1, 1, 1, "Olivier CORRIO", "Pièce 2", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Salle a manger", "Maison", "", 1, 1, 1, 1, "Olivier CORRIO", "Pièce 3", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Galaxie 1", "Planête 1", "dessert", 1, 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Galaxie 1", "Planête 2", "ocean", 1, 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Galaxie 1", "Planête 3", "jungle", 1, 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Galaxie 1", "Planête 4", "plaine", 1, 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Galaxie 2", "Planête 1", "gazeux", 1, 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Galaxie 2", "Planête 2", "invivable", 1, 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Galaxie 2", "Planête 3", "sec", 1, 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Galaxie 2", "Planête 4", "arude", 1, 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Galaxie 2", "Planête 5", "monde minier", 1, 1, 1, 1, "Marc ABSIDE", "Planête 5 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Robot tourelle", "Enemy", "force", 1, 1, 1, 1, "Jean PHILIPPE", "Robot tourelle", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Robot sniper", "Enemy", "precision", 1, 1, 1, 1, "Jean PHILIPPE", "Robot sniper", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Robot assassin", "Enemy", "discretion", 1, 1, 1, 1, "Jean PHILIPPE", "Robot asssssin", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Robot général", "Enemy", "intelligence", 1, 1, 1, 1, "Jean PHILIPPE", "Robot général", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Robot caporal", "Enemy", "intelligence", 1, 1, 1, 1, "Jean PHILIPPE", "Robot caporal", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
-            clas.append(("Robot dirigeant", "Enemy", "force diplomatique", 1, 1, 1, 1, "Jean PHILIPPE", "Robot dirigeant", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , ""))
+            clas.append(("Personnage", "Entite", "", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des personnages", 1, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme", convert_pic()))
+            clas.append(("Chasseur", "Personnage", "discretion", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Chasseurs", 1, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme", convert_pic()))
+            clas.append(("Chevalier", "Personnage", "force", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des chevaliers", 1, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme", convert_pic()))
+            clas.append(("Mage", "personnage", "magie", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Mages", 1, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme", convert_pic()))
+            clas.append(("Démon", "Entité", "force", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Démons", 2, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme", convert_pic()))
+            clas.append(("Gobelin", "Démon", "discretion", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Gobelins", 2, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme", convert_pic()))
+            clas.append(("Ogre", "Démon", "force", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Ogres", 2, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme", convert_pic()))
+            clas.append(("Orc", "Démon", "force", 1, 1, 1, 1, "Maxime PONTLEVOY", "Classe des Orc", 2, 0, 1, 1, "int m_vie", "int m_mana", 0, 1, "bool estVivant", 1, "recevoirDegats", "attaquer", "boirePotionDeVie", "ChangerArme", convert_pic()))
+            clas.append(("Maison", "Batimnt", "", 1, 1, 1, 1, "Olivier CORRIO", "Classe général de la maison", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Salon", "Maison", "", 1, 1, 1, 1, "Olivier CORRIO", "Pièce 1", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Cuisine", "Maison", "", 1, 1, 1, 1, "Olivier CORRIO", "Pièce 2", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Salle a manger", "Maison", "", 1, 1, 1, 1, "Olivier CORRIO", "Pièce 3", 4, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Galaxie 1", "Planête 1", "dessert", 1, 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Galaxie 1", "Planête 2", "ocean", 1, 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Galaxie 1", "Planête 3", "jungle", 1, 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Galaxie 1", "Planête 4", "plaine", 1, 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 1", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Galaxie 2", "Planête 1", "gazeux", 1, 1, 1, 1, "Marc ABSIDE", "Planête 1 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Galaxie 2", "Planête 2", "invivable", 1, 1, 1, 1, "Marc ABSIDE", "Planête 2 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Galaxie 2", "Planête 3", "sec", 1, 1, 1, 1, "Marc ABSIDE", "Planête 3 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Galaxie 2", "Planête 4", "arude", 1, 1, 1, 1, "Marc ABSIDE", "Planête 4 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Galaxie 2", "Planête 5", "monde minier", 1, 1, 1, 1, "Marc ABSIDE", "Planête 5 de la Galaxie 2", 7, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Robot tourelle", "Enemy", "force", 1, 1, 1, 1, "Jean PHILIPPE", "Robot tourelle", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Robot sniper", "Enemy", "precision", 1, 1, 1, 1, "Jean PHILIPPE", "Robot sniper", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Robot assassin", "Enemy", "discretion", 1, 1, 1, 1, "Jean PHILIPPE", "Robot asssssin", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Robot général", "Enemy", "intelligence", 1, 1, 1, 1, "Jean PHILIPPE", "Robot général", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Robot caporal", "Enemy", "intelligence", 1, 1, 1, 1, "Jean PHILIPPE", "Robot caporal", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
+            clas.append(("Robot dirigeant", "Enemy", "force diplomatique", 1, 1, 1, 1, "Jean PHILIPPE", "Robot dirigeant", 6, 0, 0, 0, "", "", 0, 0, "", 0,"" , "", "" , "", convert_pic()))
             cursor.executemany("""INSERT INTO classe
                 (name, classe_mere, specialiter, Protect_head, Generat_head_default_construct, Generat_head_destruct, 
                 Commentaire, auteur, creation_data, class_role, idUser, idUserUnban, 
@@ -473,35 +520,36 @@ def InitDataBase():
                 protected, 
                 public, public1,
                 methode, 
-                methode1, methode2, methode3, methode4) 
-                VALUES(?, ?, ?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", clas)
+                methode1, methode2, methode3, methode4,
+                image_classe) 
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", clas)
 
         cursor.execute("""SELECT * from classemodel""")
         rows_classe = cursor.fetchall()
         if rows_classe == []:
             clasmodel = []
-            clasmodel.append(("Personnage", "Entité", "", 1, 1, 1, 1, "Classe Générique", "Classe des personnages", 0, 0))
-            clasmodel.append(("Chasseur", "Personnage", "précision", 1, 1, 1, 1, "Classe Générique", "Classe des Chasseurs", 0, 0))
-            clasmodel.append(("Chevalier", "Personnage", "force", 1, 1, 1, 1, "Classe Générique", "Classe des chevaliers", 0, 0))
-            clasmodel.append(("Mage", "personnage", "magie", 1, 1, 1, 1, "Classe Générique", "Classe des Mages", 0, 0))
-            clasmodel.append(("Démon", "Entité", "", 1, 1, 1, 1, "Classe Générique", "Classe des Démons", 0, 0))
-            clasmodel.append(("Gobelin", "Démon", "discretion", 1, 1, 1, 1, "Classe Générique", "Classe des Gobelins", 0, 0))
-            clasmodel.append(("Ogres", "Démon", "force", 1, 1, 1, 1, "Classe Générique", "Classe des Orges", 0, 0))
-            clasmodel.append(("Chevalier noir", "Démon", "force", 1, 1, 1, 1, "Classe Générique", "Classe des Chevalier noir", 0, 0))
-            clasmodel.append(("Dragons", "Démon", "magie", 1, 1, 1, 1, "Classe Générique", "Classe des Dragons", 0, 0))
-            clasmodel.append(("Roi Démon", "Démon", "magie", 1, 1, 1, 1, "Classe Générique", "Classe du Roi démon", 0, 0))
-            clasmodel.append(("Armes", "", "", 1, 1, 1, 1, "Classe Générique", "Classe des Armes", 0, 0))
-            clasmodel.append(("Arme a main", "Armes", "", 1, 1, 1, 1, "Classe Générique", "Classe des Armes à main", 0, 0))
-            clasmodel.append(("Epée Longue", "Arme a main", "puissance", 1, 1, 1, 1, "Classe Générique", "Classe des Epee longue", 0, 0))
-            clasmodel.append(("Dague", "Arme a main", "rapidite", 1, 1, 1, 1, "Classe Générique", "Classe des Dagues", 0, 0))
-            clasmodel.append(("Sabre", "Arme a main", "puissance", 1, 1, 1, 1, "Classe Générique", "Classe des Sabres", 0, 0))
-            clasmodel.append(("Arme a feu", "Armes", "distance", 1, 1, 1, 1, "Classe Générique", "Classe des Armes a feu", 0, 0))
-            clasmodel.append(("pistolet", "Arme a feu", "distance", 1, 1, 1, 1, "Classe Générique", "Classe des pistolet", 0, 0))
-            clasmodel.append(("mousqueter", "Arme a feu", "distance", 1, 1, 1, 1, "Classe Générique", "Classe des mousqueter", 0, 0))
+            clasmodel.append(("Personnage", "Entité", "", 1, 1, 1, 1, "Classe Générique", "Classe des personnages", 0, 0, convert_pic()))
+            clasmodel.append(("Chasseur", "Personnage", "précision", 1, 1, 1, 1, "Classe Générique", "Classe des Chasseurs", 0, 0, convert_pic()))
+            clasmodel.append(("Chevalier", "Personnage", "force", 1, 1, 1, 1, "Classe Générique", "Classe des chevaliers", 0, 0, convert_pic()))
+            clasmodel.append(("Mage", "personnage", "magie", 1, 1, 1, 1, "Classe Générique", "Classe des Mages", 0, 0, convert_pic()))
+            clasmodel.append(("Démon", "Entité", "", 1, 1, 1, 1, "Classe Générique", "Classe des Démons", 0, 0, convert_pic()))
+            clasmodel.append(("Gobelin", "Démon", "discretion", 1, 1, 1, 1, "Classe Générique", "Classe des Gobelins", 0, 0, convert_pic()))
+            clasmodel.append(("Ogres", "Démon", "force", 1, 1, 1, 1, "Classe Générique", "Classe des Orges", 0, 0, convert_pic()))
+            clasmodel.append(("Chevalier noir", "Démon", "force", 1, 1, 1, 1, "Classe Générique", "Classe des Chevalier noir", 0, 0, convert_pic()))
+            clasmodel.append(("Dragons", "Démon", "magie", 1, 1, 1, 1, "Classe Générique", "Classe des Dragons", 0, 0, convert_pic()))
+            clasmodel.append(("Roi Démon", "Démon", "magie", 1, 1, 1, 1, "Classe Générique", "Classe du Roi démon", 0, 0, convert_pic()))
+            clasmodel.append(("Armes", "", "", 1, 1, 1, 1, "Classe Générique", "Classe des Armes", 0, 0, convert_pic()))
+            clasmodel.append(("Arme a main", "Armes", "", 1, 1, 1, 1, "Classe Générique", "Classe des Armes à main", 0, 0, convert_pic()))
+            clasmodel.append(("Epée Longue", "Arme a main", "puissance", 1, 1, 1, 1, "Classe Générique", "Classe des Epee longue", 0, 0, convert_pic()))
+            clasmodel.append(("Dague", "Arme a main", "rapidite", 1, 1, 1, 1, "Classe Générique", "Classe des Dagues", 0, 0, convert_pic()))
+            clasmodel.append(("Sabre", "Arme a main", "puissance", 1, 1, 1, 1, "Classe Générique", "Classe des Sabres", 0, 0, convert_pic()))
+            clasmodel.append(("Arme a feu", "Armes", "distance", 1, 1, 1, 1, "Classe Générique", "Classe des Armes a feu", 0, 0, convert_pic()))
+            clasmodel.append(("pistolet", "Arme a feu", "distance", 1, 1, 1, 1, "Classe Générique", "Classe des pistolet", 0, 0, convert_pic()))
+            clasmodel.append(("mousqueter", "Arme a feu", "distance", 1, 1, 1, 1, "Classe Générique", "Classe des mousqueter", 0, 0, convert_pic()))
             cursor.executemany("""INSERT INTO classemodel(name, classe_mere, specialiter, Protect_head, Generat_head_default_construct, Generat_head_destruct, 
                 Commentaire, auteur, creation_data, class_role, 
-                idUser, idUserUnban) 
-                VALUES(?, ?, ?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?)""", clasmodel)
+                idUser, idUserUnban, image_classe) 
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?, ?)""", clasmodel)
 
         cursor.execute("""SELECT * from connexionclassuser""")
         rows_classe = cursor.fetchall()
@@ -531,6 +579,25 @@ def InitDataBase():
             cursor.execute("""DELETE FROM notifications""")
             cursor.executemany("""INSERT INTO notifications(typeNotif, Commentaire, idUser, idUserUnban)
                 VALUES(?, ?, ?, 0)""", notif)
+
+        cursor.execute("""SELECT * from commande""")
+        rows_commande = cursor.fetchall()
+        if rows_commande == []:
+            commande = []
+            commande.append(("help", "all commande"))
+            commande.append(("table", ""))
+            commande.append(("all table", ""))
+            commande.append(("data table", ""))
+            commande.append(("last sequence", ""))
+            commande.append(("ping", ""))
+            commande.append(("cls", ""))
+            cursor.executemany("""INSERT INTO commande(Commande, Reponse)
+                VALUES(?, ?)""", commande)
+
+        cursor.execute("""SELECT * from demandecommande""")
+        rows_demandecommande = cursor.fetchall()
+        if rows_demandecommande != []:
+            cursor.execute("""DELETE FROM demandecommande""")
 
 
         #Fin de l'appel
