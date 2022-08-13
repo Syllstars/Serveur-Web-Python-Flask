@@ -2,17 +2,27 @@
 # -*- coding: utf-8 -*-
 
 #Appel des différentes routes des frameworks
-from flask import Flask, render_template, url_for, redirect
-from flask import session, current_app, g, send_file,send_from_directory, request
+from asyncio import create_subprocess_exec
+from email.mime import image
+from random import random
+import re
+from unittest import result
+from colorama import Cursor
+from flask import Flask, render_template, url_for, redirect, abort
+from flask import session, current_app, g, send_file, send_from_directory, request
 from flask_mail import Mail, Message
 from flask.cli import with_appcontext
+from urllib.request import pathname2url
 
 from forms import RegisterForm, NewLoginForm, NewClassGenerator
 from forms import ForgottenPassword, ModifierClassGenerator, FormDataBanking
 from forms import FormChangUserName, FormChangUserEmail , FormChangUserPassword, FormChangUserProfilImg
-from config import Config
+from forms import FormNewNotif, FormCommandTerm
+from config import Config, PayementRequired
 
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.exceptions import HTTPException, default_exceptions, Aborter
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from sqlalchemy import MetaData, true
 from flask_sqlalchemy import SQLAlchemy
@@ -22,11 +32,19 @@ import sqlite3 as sql
 import base64
 import os
 import sys
+import numpy
+import random
 
 from datetime import datetime
 
 #Configuration du serveur
+default_exceptions[402] = PayementRequired
+abort = Aborter()
+
 app = Flask(__name__)
+
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 app.config.from_object(Config)
 
 app.config['SECRET_KEY'] = b'_\xd0\xe3`\x90nI\x0f`5?\x0b\xca\\\x14\xb8'
@@ -36,7 +54,6 @@ app.config['RECAPTCHA_PRIVATE_KEY'] = '6Leo12sgAAAAABV0BZlccst1gsHepAiWWknAsqyr'
 app.config['RECAPTCHA_OPTION'] = {
     'theme': 'custom'
 }
-
 db_name = 'database.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -52,10 +69,20 @@ db = SQLAlchemy(app, metadata=metadata)
 
 #Definition pour les images de la DataBase
 def convert_pic():
-    filename = "profile.jpg"
+    x = random.randint(1,2)
+    if x == 1:
+        filename = "profil1.jpg"
+    if x == 2:
+        filename = "profil2.jpg"
     with open(filename, 'rb') as file:       
         photo = file.read()
     return photo    
+
+def convert_default_classe_pic():
+    filename = "default_profil_classe.png"
+    with open(filename, 'rb') as file:       
+        photo = file.read()
+    return photo  
 
 #Génération des classes pour la communication avec la database
 class user(db.Model): 
@@ -143,6 +170,7 @@ class classe(db.Model):
     methode8 = db.Column(db.Text)
     idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
     idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
+    image_classe = db.Column(db.LargeBinary)
 
     def __repr__(self):
         return '<User %r>' % self.name
@@ -198,6 +226,7 @@ class classemodel(db.Model):
     methode8 = db.Column(db.Text)
     idUser = db.Column(db.Integer, db.ForeignKey('user.idUsers'))
     idUserUnban = db.Column(db.Integer, db.ForeignKey('user_banni.idUsers'))
+    image_classe = db.Column(db.LargeBinary)
 
     def __repr__(self):
         return '<User %r>' % self.name
@@ -221,6 +250,7 @@ class notifications(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.typeNotif
+        
 mail = Mail(app)
 
 #-----------------------------------------
@@ -327,12 +357,14 @@ def login():
                 'vip_account': rows[0][4],
                 'idUser' : rows[0][5]
                 }
-            #Ronvoie vers la page d'acceuil
+            conn.close()
+            #Renvoie vers la page d'acceuil
             return redirect(url_for("acceuil"))
         else:
+            conn.close()
             #Sinon retour a la page de connexion
             return render_template("index.html", register_form = form_new, login_form = form_login)
-        conn.close()
+        
 
     
 #Route pour le logout d'un utilisateur
@@ -436,7 +468,7 @@ def replacename(idUser):
     name = form_User_name.name.data
 
     #Envoye du nom dans la DataBase
-    conn.execute("""UPDATE user 
+    cursor.execute("""UPDATE user 
         SET name=? WHERE user.idUsers=?""", (name, idUser))
     conn.commit()
 
@@ -531,14 +563,25 @@ def download_file_cpp():
 def acceuil():
     conn = sql.connect('database.db')
     cursor = conn.cursor()
-
     cursor.execute("""SELECT * FROM classe
         WHERE classe.idUser=?""",(session['user']['idUser'],))
     rows = cursor.fetchall()
-
+    #Récupération de l'image pour la traiter
+    one_classe = 0
+    data_image = []
+    cursor.execute("""SELECT COUNT(*) from classe
+        WHERE classe.idUser=?""",(session['user']['idUser'],))
+    nb_classe = cursor.fetchall()
+    for i in range(nb_classe[0][0]):
+        data_image.append((""))
+    for row in rows:
+        image = base64.b64encode(row[50])
+        data = image.decode("UTF-8")
+        data_image[one_classe] = data
+        one_classe = one_classe + 1
     #Fermeture de la database
     conn.close()
-    return render_template("acceuil.html", 
+    return render_template("acceuil.html",  data_image = data_image,
                            classe_liste = rows, idGroup = session['user']['idGroup'])
 
 #Bouton de modification de la classe
@@ -681,14 +724,12 @@ def genererh(idClass):
             for i in range(22, 30):
                 if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
                     TexteH += "     " + str(donnees[0][i]) + ";\n"
-        #Zone priver
-        
+        #Zone priver       
         if(donnees[0][30] == 1):
             TexteH += "\n     private:     //Attribue Priver\n\n"
             for i in range(31, 39):
                 if ((donnees[0][i] != "") and (str(donnees[0][i]) != "None")):
                     TexteH += "     " + str(donnees[0][i]) + ";\n"
-
     TexteH += "};\n"
     if (donnees[0][3] == 1):
         TexteH += "#endif"
@@ -715,7 +756,7 @@ def generercpp(idClass):
     donnees = cursor.fetchall()
     TexteCPP = ""
     #Génération des données à écrire dans le fichier
-    TexteCPP += '#include "' + str(donnees[0][1]) + '"\n#include <iostream>\n#include <cmath>\n\nusing namespace std;\n\n'
+    TexteCPP += '#include "' + str(donnees[0][1]) + '.hpp"\n#include <iostream>\n#include <cmath>\n\nusing namespace std;\n\n'
     if (donnees[0][4] == 1):
         TexteCPP += "//Methode pour le constructeur\n"
         TexteCPP += str(donnees[0][1]) + "::" + str(donnees[0][1]) + "(void)\n{\n}\n\n"
@@ -815,6 +856,11 @@ def generer():
             name = request.form['name']
             classe_mere = request.form['class_mere']
             specialiter = request.form['specialiter']
+            pic = request.files['Image']
+            if (pic.filename != ''):
+                image = pic.read()
+            else:
+                image = convert_default_classe_pic()
             Protect_head = request.form.get('Protect_head')
             default_constructeur = request.form.get('Generat_head_default_construct')
             head_destructeur = request.form.get('Generat_head_destruct')
@@ -845,116 +891,193 @@ def generer():
                 public_var.append((""))
                 type_public_var.append((""))
                 protect_var.append((""))
+                type_protect_var.append((""))
                 private_var.append((""))
+                type_private_var.append((""))
                 methode_var.append((""))
+                nom_var_private.append((""))
+                nom_var_protect.append((""))
+                nom_var_public.append((""))
             if (attribue == "1"): 
                 if (public == "1"):
                     #Attribue public 1
-                    type_public_var[0] = request.form['type_public1']
-                    nom_var_public[0] = request.form['public1']
-                    public_var[0] = type_public_var[0] + " " + nom_var_public[0]
+                    if (request.form['type_public1'] != "--Choose a type--"):
+                        type_public_var[0] = request.form['type_public1']
+                        nom_var_public[0] = request.form['public1']
+                        public_var[0] = type_public_var[0] + " " + nom_var_public[0]
+                    else:
+                        public_var[0] = ""
                     #Attribue public 2
-                    type_public_var[1] = request.form['type_public2']
-                    nom_var_public[1] = request.form['public2']
-                    public_var[1] = type_public_var[1] + " " + nom_var_public[1]
+                    if (request.form['type_public2'] != "--Choose a type--"):
+                        type_public_var[1] = request.form['type_public2']
+                        nom_var_public[1] = request.form['public2']
+                        public_var[1] = type_public_var[1] + " " + nom_var_public[1]
+                    else:
+                        public_var[1] = ""
                     #Attribue public 3
-                    type_public_var[2] = request.form['type_public3']
-                    nom_var_public[2] = request.form['public3']
-                    public_var[2] = type_public_var[2] + " " + nom_var_public[2]
+                    if (request.form['type_public3'] != "--Choose a type--"):
+                        type_public_var[2] = request.form['type_public3']
+                        nom_var_public[2] = request.form['public3']
+                        public_var[2] = type_public_var[2] + " " + nom_var_public[2]
+                    else:
+                        public_var[2] = ""
                     #Attribue public 4
-                    type_public_var[3] = request.form['type_public4']
-                    nom_var_public[3] = request.form['public4']
-                    public_var[3] = type_public_var[3] + " " + nom_var_public[3]
+                    if (request.form['type_public4'] != "--Choose a type--"):
+                        type_public_var[3] = request.form['type_public4']
+                        nom_var_public[3] = request.form['public4']
+                        public_var[3] = type_public_var[3] + " " + nom_var_public[3]
+                    else:
+                        public_var[3] = ""
                     #Attribue public 5
-                    type_public_var[4] = request.form['type_public5']
-                    nom_var_public[4] = request.form['public5']
-                    public_var[4] = type_public_var[4] + " " + nom_var_public[4]
+                    if (request.form['type_public5'] != "--Choose a type--"):
+                        type_public_var[4] = request.form['type_public5']
+                        nom_var_public[4] = request.form['public5']
+                        public_var[4] = type_public_var[4] + " " + nom_var_public[4]
+                    else:
+                        public_var[4] = ""
                     #Attribue public 6
-                    type_public_var[5] = request.form['type_public6']
-                    nom_var_public[5] = request.form['public6']
-                    public_var[5] = type_public_var[5] + " " + nom_var_public[5]
+                    if (request.form['type_public6'] != "--Choose a type--"):
+                        type_public_var[5] = request.form['type_public6']
+                        nom_var_public[5] = request.form['public6']
+                        public_var[5] = type_public_var[5] + " " + nom_var_public[5]
+                    else:
+                        public_var[5] = ""
                     #Attribue public 7
-                    type_public_var[6] = request.form['type_public7']
-                    nom_var_public[6] = request.form['public7']
-                    public_var[6] = type_public_var[6] + " " + nom_var_public[6]
+                    if (request.form['type_public7'] != "--Choose a type--"):
+                        type_public_var[6] = request.form['type_public7']
+                        nom_var_public[6] = request.form['public7']
+                        public_var[6] = type_public_var[6] + " " + nom_var_public[6]
+                    else:
+                        public_var[6] = ""
                     #Attribue public 8
-                    type_public_var[7] = request.form['type_public8']
-                    nom_var_public[7] = request.form['public8']
-                    public_var[7] = type_public_var[7] + " " + nom_var_public[7]
+                    if (request.form['type_public8'] != "--Choose a type--"):
+                        type_public_var[7] = request.form['type_public8']
+                        nom_var_public[7] = request.form['public8']
+                        public_var[7] = type_public_var[7] + " " + nom_var_public[7]
+                    else:
+                        public_var[7] = ""
                 elif (request.form.get('public') == None):
                     for i in range(8):
                         public_var[i] = ""
                     public = 0 
                 if (protected == "1"):
                     #Attribue proteger 1
-                    type_protect_var[0] = request.form['type_protected1']
-                    nom_var_protect[0] = request.form['protected1']
-                    protect_var[0] = type_protect_var[0] + " " + nom_var_protect[0]
+                    if (request.form['type_protected1'] != "--Choose a type--"):
+                        type_protect_var[0] = request.form['type_protected1']
+                        nom_var_protect[0] = request.form['protected1']
+                        protect_var[0] = type_protect_var[0] + " " + nom_var_protect[0]
+                    else:
+                        protect_var[0] = ""
                     #Attribue proteger 2
-                    type_protect_var[1] = request.form['type_protected2']
-                    nom_var_protect[1] = request.form['protected2']
-                    protect_var[1] = type_protect_var[1] + " " + nom_var_protect[1]
+                    if (request.form['type_protected2'] != "--Choose a type--"):
+                        type_protect_var[1] = request.form['type_protected2']
+                        nom_var_protect[1] = request.form['protected2']
+                        protect_var[1] = type_protect_var[1] + " " + nom_var_protect[1]
+                    else:
+                        protect_var[1] = ""
                     #Attribue proteger 3
-                    type_protect_var[2] = request.form['type_protected3']
-                    nom_var_protect[2] = request.form['protected3']
-                    protect_var[2] = type_protect_var[2] + " " + nom_var_protect[2]
+                    if (request.form['type_protected3'] != "--Choose a type--"):
+                        type_protect_var[2] = request.form['type_protected3']
+                        nom_var_protect[2] = request.form['protected3']
+                        protect_var[2] = type_protect_var[2] + " " + nom_var_protect[2]
+                    else:
+                        protect_var[2] = ""
                     #Attribue proteger 4
-                    type_protect_var[3] = request.form['type_protected4']
-                    nom_var_protect[3] = request.form['protected4']
-                    protect_var[3] = type_protect_var[3] + " " + nom_var_protect[3]
+                    if (request.form['type_protected4'] != "--Choose a type--"):
+                        type_protect_var[3] = request.form['type_protected4']
+                        nom_var_protect[3] = request.form['protected4']
+                        protect_var[3] = type_protect_var[3] + " " + nom_var_protect[3]
+                    else:
+                        protect_var[3] = ""
                     #Attribue proteger 5
-                    type_protect_var[4] = request.form['type_protected5']
-                    nom_var_protect[4] = request.form['protected5']
-                    protect_var[4] = type_protect_var[4] + " " + nom_var_protect[4]
+                    if (request.form['type_protected5'] != "--Choose a type--"):
+                        type_protect_var[4] = request.form['type_protected5']
+                        nom_var_protect[4] = request.form['protected5']
+                        protect_var[4] = type_protect_var[4] + " " + nom_var_protect[4]
+                    else:
+                        protect_var[4] = ""
                     #Attribue proteger 6
-                    type_protect_var[5] = request.form['type_protected6']
-                    nom_var_protect[5] = request.form['protected6']
-                    protect_var[5] = type_protect_var[5] + " " + nom_var_protect[5]
+                    if (request.form['type_protected6'] != "--Choose a type--"):
+                        type_protect_var[5] = request.form['type_protected6']
+                        nom_var_protect[5] = request.form['protected6']
+                        protect_var[5] = type_protect_var[5] + " " + nom_var_protect[5]
+                    else:
+                        protect_var[5] = ""
                     #Attribue proteger 7
-                    type_protect_var[6] = request.form['type_protected7']
-                    nom_var_protect[6] = request.form['protected7']
-                    protect_var[6] = type_protect_var[6] + " " + nom_var_protect[6]
+                    if (request.form['type_protected7'] != "--Choose a type--"):
+                        type_protect_var[6] = request.form['type_protected7']
+                        nom_var_protect[6] = request.form['protected7']
+                        protect_var[6] = type_protect_var[6] + " " + nom_var_protect[6]
+                    else:
+                        protect_var[6] = ""
                     #Attribue proteger 8
-                    type_protect_var[7] = request.form['type_protected8']
-                    nom_var_protect[7] = request.form['protected8']
-                    protect_var[7] = type_protect_var[7] + " " + nom_var_protect[7]
+                    if (request.form['type_protected8'] != "--Choose a type--"):
+                        type_protect_var[7] = request.form['type_protected8']
+                        nom_var_protect[7] = request.form['protected8']
+                        protect_var[7] = type_protect_var[7] + " " + nom_var_protect[7]
+                    else:
+                        protect_var[7] = ""
                 elif (request.form.get('protected') == None):
                     for i in range(8):
                         protect_var[i] = ""
                     protected = 0
                 if (private == "1"):
                     #Attribue private 1
-                    type_private_var[0] = request.form['type_private1']
-                    nom_var_private[0] = request.form['private1']
-                    private_var[0] = type_private_var[0] + " " + nom_var_private[0] 
+                    if (request.form['type_private1'] != "--Choose a type--"):
+                        type_private_var[0] = request.form['type_private1']
+                        nom_var_private[0] = request.form['private1']
+                        private_var[0] = type_private_var[0] + " " + nom_var_private[0] 
+                    else:
+                        private_var[0] = ""
                     #Attribue private 2
-                    type_private_var[1] = request.form['type_private2']
-                    nom_var_private[1] = request.form['private2']
-                    private_var[1] = type_private_var[1] + " " + nom_var_private[1] 
+                    if (request.form['type_private2'] != "--Choose a type--"):
+                        type_private_var[1] = request.form['type_private2']
+                        nom_var_private[1] = request.form['private2']
+                        private_var[1] = type_private_var[1] + " " + nom_var_private[1] 
+                    else:
+                        private_var[1] = ""
                     #Attribue private 3
-                    type_private_var[2] = request.form['type_private3']
-                    nom_var_private[2] = request.form['private3']
-                    private_var[2] = type_private_var[2] + " " + nom_var_private[2] 
+                    if (request.form['type_private3'] != "--Choose a type--"):
+                        type_private_var[2] = request.form['type_private3']
+                        nom_var_private[2] = request.form['private3']
+                        private_var[2] = type_private_var[2] + " " + nom_var_private[2] 
+                    else:
+                        private_var[2] = ""
                     #Attribue private 4
-                    type_private_var[3] = request.form['type_private4']
-                    nom_var_private[3] = request.form['private4']
-                    private_var[3] = type_private_var[3] + " " + nom_var_private[3] 
+                    if (request.form['type_private4'] != "--Choose a type--"):
+                        type_private_var[3] = request.form['type_private4']
+                        nom_var_private[3] = request.form['private4']
+                        private_var[3] = type_private_var[3] + " " + nom_var_private[3] 
+                    else:
+                        private_var[3] = ""
                     #Attribue private 5
-                    type_private_var[4] = request.form['type_private5']
-                    nom_var_private[4] = request.form['private5']
-                    private_var[4] = type_private_var[4] + " " + nom_var_private[4] 
+                    if (request.form['type_private5'] != "--Choose a type--"):
+                        type_private_var[4] = request.form['type_private5']
+                        nom_var_private[4] = request.form['private5']
+                        private_var[4] = type_private_var[4] + " " + nom_var_private[4] 
+                    else:
+                        private_var[4] = ""
                     #Attribue private 6
-                    type_private_var[5] = request.form['type_private6']
-                    nom_var_private[5] = request.form['private6']
-                    private_var[5] = type_private_var[5] + " " + nom_var_private[5] 
+                    if (request.form['type_private6'] != "--Choose a type--"):
+                        type_private_var[5] = request.form['type_private6']
+                        nom_var_private[5] = request.form['private6']
+                        private_var[5] = type_private_var[5] + " " + nom_var_private[5] 
+                    else:
+                        private_var[5] = ""
                     #Attribue private 7
-                    type_private_var[6] = request.form['type_private7']
-                    nom_var_private[6] = request.form['private7']
-                    private_var[6] = type_private_var[6] + " " + nom_var_private[6] 
+                    if (request.form['type_private7'] != "--Choose a type--"):
+                        type_private_var[6] = request.form['type_private7']
+                        nom_var_private[6] = request.form['private7']
+                        private_var[6] = type_private_var[6] + " " + nom_var_private[6] 
+                    else:
+                        private_var[6] = ""
                     #Attribue private 8
-                    type_private_var[7] = request.form['type_private8']
-                    nom_var_private[7] = request.form['private8']
-                    private_var[7] = type_private_var[7] + " " + nom_var_private[7] 
+                    if (request.form['type_private8'] != "--Choose a type--"):
+                        type_private_var[7] = request.form['type_private8']
+                        nom_var_private[7] = request.form['private8']
+                        private_var[7] = type_private_var[7] + " " + nom_var_private[7] 
+                    else:
+                        private_var[7] = ""
                 elif (request.form.get('private') == None):
                     for i in range(8):
                         private_var[i] = ""
@@ -989,7 +1112,7 @@ def generer():
                                 protected, protect_var[0], protect_var[1], protect_var[2], protect_var[3], protect_var[4], protect_var[5], protect_var[6], protect_var[7],
                                 private, private_var[0], private_var[1], private_var[2], private_var[3], private_var[4], private_var[5], private_var[6], private_var[7],
                                 methode, methode_var[0], methode_var[1], methode_var[2], methode_var[3], methode_var[4], methode_var[5], methode_var[6], methode_var[7],
-                                User))
+                                User, image))
             #Ecriture de la classe sur la base de données
             cursor.executemany("""INSERT INTO classe(name, classe_mere, specialiter, Protect_head, Generat_head_default_construct, 
                 Generat_head_destruct, Commentaire, auteur, creation_data, class_role, attribue, 
@@ -997,8 +1120,8 @@ def generer():
                 protected, protected1, protected2, protected3, protected4, protected5, protected6, protected7, protected8,
                 private, private1, private2, private3, private4, private5, private6, private7, private8,
                 methode, methode1, methode2, methode3, methode4, methode5, methode6, methode7, methode8,
-                idUser, idUserUnban) 
-                VALUES(?, ?, ?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)""", list_classe)  
+                idUser, idUserUnban, image_classe) 
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, DATETIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)""", list_classe)  
             conn.commit()
             #Ajout d'une classe sur le compteur de l'utilisateur
             nbclasse = validation[0][0] + 1
@@ -1025,6 +1148,18 @@ def Boutique():
     #Récupération des classes générer par le serveur
     cursor.execute("""SELECT * from classemodel""")
     classe_can_be_like = cursor.fetchall()
+    #Récupération de l'image pour la traiter
+    one_classe = 0
+    data_image = []
+    cursor.execute("""SELECT COUNT(*) from classemodel""")
+    nb_classe = cursor.fetchall()
+    for i in range(nb_classe[0][0]):
+        data_image.append((""))
+    for row in classe_can_be_like:
+        image = base64.b64encode(row[50])
+        data = image.decode("UTF-8")
+        data_image[one_classe] = data
+        one_classe = one_classe + 1
     #Récupération des classes liké par l'utilisateur connecter
     cursor.execute("""SELECT * FROM connexionclassuser
         WHERE  iduser =?""", (session['user']['idUser'],))
@@ -1035,6 +1170,7 @@ def Boutique():
     return render_template("Boutique.html", 
                             classe_systeme = classe_can_be_like,
                             classe_like = classe_like,
+                            data_image = data_image,
                             vip_account = session['user']['vip_account'],
                             idGroup = session['user']['idGroup'])
 
@@ -1115,40 +1251,102 @@ def dislikeclasse(idClasse):
 
 @app.route('/gestiondata', methods=['get', 'post'])
 def gestiondata():
+    #Formulaire
+    formnotif = FormNewNotif()
     #Connexion a la database
     conn = sql.connect('database.db')
     cursor = conn.cursor()
     #Récupération de toute les classes créer par tous les utilisateurs
     cursor.execute("""SELECT * from classe""")
     classerequete = cursor.fetchall()
+    #transformation des images
+    one_classe = 0
+    data_image_classe = []
+    cursor.execute("""SELECT COUNT(*) from classe""")
+    nb_classe = cursor.fetchall()
+    print(nb_classe)
+    for i in range(nb_classe[0][0]):
+        data_image_classe.append((""))
+    for row in classerequete:
+        image = base64.b64encode(row[50])
+        data = image.decode("UTF-8")
+        data_image_classe[one_classe] = data
+        one_classe = one_classe + 1
     #Récupération de tout les utilisateurs ayant validé leur compte sur ce site
     cursor.execute("""SELECT * from user""")
     userrequete = cursor.fetchall()
+    #transformation des images 
+    one_user = 0
+    data_image = []
+    cursor.execute("""SELECT COUNT(*) from user""")
+    nb_user = cursor.fetchall()
+    for i in range(nb_user[0][0]):
+        data_image.append((""))
+    for row in userrequete:
+        image  = base64.b64encode(row[6])
+        data = image.decode("UTF-8")
+        data_image[one_user] = data
+        one_user = one_user + 1
     #Récupération de la table des utilisateurs banni
     cursor.execute("""SELECT * from user_banni""")
     userbannirequete = cursor.fetchall()
+    #transformation des images
+    one_user_banni = 0
+    data_image_banni = []
+    cursor.execute("""SELECT COUNT(*) from user_banni""")
+    nb_user_banni = cursor.fetchall()
+    for i in range(nb_user_banni[0][0]):
+        data_image_banni.append((""))
+    for row in userbannirequete:
+        image_banni  = base64.b64encode(row[6])
+        data = image_banni.decode("UTF-8")
+        data_image_banni[one_user_banni] = data
+        one_user_banni = one_user_banni + 1
     #Récupération de la moyenne du nombre de classe pour tous les utilisateurs
     cursor.execute("""DROP VIEW IF EXISTS moyenne_classe_all_user""")
     cursor.execute("CREATE VIEW moyenne_classe_all_user AS SELECT AVG(nb_classe_Faite) from user")
-    cursor.execute("""SELECT AVG(nb_classe_Faite) from user""")
+    cursor.execute("""SELECT ROUND(AVG(nb_classe_Faite), 1) from user""")
     moyenne_classe_all_user = cursor.fetchall()
-    #Récupération du nombre d'itilisateurs suivant les différents type de compte proposé dans la boutique'
+    #Récupération du nombre d'itilisateurs suivant les différents type de compte proposé dans la boutique
     cursor.execute("""DROP VIEW IF EXISTS nombre_type_compte""")
     cursor.execute("CREATE VIEW nombre_type_compte AS SELECT vip_account, COUNT(name) FROM user GROUP BY vip_account")
     cursor.execute("""SELECT vip_account, COUNT(name) FROM user
         GROUP BY vip_account""")
     nombre_type_compte = cursor.fetchall()
-
     #Fermeture de la connexion à la database
     conn.close()
-    return render_template("GestionData.html",
+    return render_template("GestionData.html", form_NewNotif = formnotif,
                            allclasse = classerequete,
                            alluser = userrequete,
+                           data_image = data_image, data_image_banni = data_image_banni, 
+                           data_image_classe = data_image_classe,
                            allbanuser = userbannirequete,
                            moyenne_classe_all_user = moyenne_classe_all_user,
                            nombre_type_compte = nombre_type_compte,
                            idUser = session['user']['idUser'],
                            idGroup = session['user']['idGroup'])
+
+@app.route('/newnotif', methods=['get','post'])
+def newnotif():
+    #Formulaire
+    form = FormNewNotif()
+    #Connnexion à la database
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    #Récupération des données
+    donnees = []
+    if request.method == 'POST':
+        datatype = request.form.get('type')
+        commentaire = request.form['commentaire']
+        donnees.append((datatype, commentaire, 0, 0))
+    #Envoie de la requête
+    cursor.executemany("""INSERT INTO notifications(typeNotif, Commentaire, idUser, idUserUnban) 
+        VALUES(?, ?, ?, ?) """, donnees)
+    conn.commit()
+    #Fermeture de la database
+    conn.close()
+    #Renvoie de la page gestiondata
+    return redirect(url_for('gestiondata'))
 
 @app.route('/supprimeruser/<int:idUser>', methods=['get', 'post'])
 def supprimeruser(idUser):
@@ -1272,6 +1470,192 @@ def changergroupe(idUser, groupe):
     conn.close()
     #Retour a la page de gestion Data
     return redirect(url_for('gestiondata'))
+
+#-----------------------------------------
+#------------Terminal de commande---------
+#-----------------------------------------
+@app.route('/terminal', methods=['get', 'post'])
+def terminal():
+    #Formulaire
+    Form = FormCommandTerm()
+    #Connexion à la database
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    num_commande = []
+    data_commande = []
+    #Récupération de toutes les commandes executer
+    cursor.execute("""SELECT * from demandecommande""")
+    num_commande = cursor.fetchall()
+    i = 0
+    data_commande = []
+    commande = []
+    nb_resultat = 0
+    first_cmd = True
+    #Récupération de toutes réponses des commandes et leur demande
+    for row in num_commande:
+        #liste de toutes les commandes
+        if row[1] == 1:
+            cursor.execute("""SELECT Commande from commande 
+                            WHERE idcommande <> 1""")
+            data_commande += cursor.fetchall()
+            commande += ["diag.help"]
+            cursor.execute("""SELECT COUNT(Commande) from commande
+                            WHERE idCommande <> 1""")
+            valeur = cursor.fetchall()
+            nb_resultat = nb_resultat + valeur[0][0]
+            first_cmd = False
+        #liste de toutes les tables
+        elif row[1] == 2:
+            cursor.execute("""SELECT name from sqlite_master
+                            WHERE type='table' """)
+            data_commande += cursor.fetchall()
+            commande += ["diag.table"]
+            cursor.execute("""SELECT COUNT(name) from sqlite_master
+                            WHERE type='table' """)
+            valeur = cursor.fetchall()
+            nb_resultat = nb_resultat + valeur[0][0]
+            first_cmd = False
+        #liste de toutes les tables et vues de la database
+        elif row[1] == 3:
+            cursor.execute("""SELECT * from sqlite_master""")
+            data_commande += cursor.fetchall()
+            commande += ["diag.all table"]
+            cursor.execute("""SELECT COUNT(*) from sqlite_master""")
+            valeur = cursor.fetchall()
+            nb_resultat = nb_resultat + valeur[0][0]
+            first_cmd = False
+        #données statistique de toutes les tables
+        elif row[1] == 4:
+            cursor.execute("""ANALYZE""")
+            conn.commit()
+            cursor.execute("""SELECT * from sqlite_stat1""")
+            data_commande += cursor.fetchall()
+            commande += ["diag.data table"]
+            cursor.execute("""SELECT COUNT(*) from sqlite_stat1""")
+            valeur = cursor.fetchall()
+            nb_resultat = nb_resultat + valeur[0][0]
+            first_cmd = False
+        #liste de chaque dernière demande faites dans chaques table
+        elif row[1] == 5:
+            cursor.execute("""SELECT * from sqlite_sequence""")
+            data_commande += cursor.fetchall()
+            commande += ["diag.last sequence"]
+            cursor.execute("""SELECT COUNT(*) from sqlite_sequence""")
+            valeur = cursor.fetchall()
+            nb_resultat = nb_resultat + valeur[0][0]
+            first_cmd = False
+        #Demande de connexion au serveur
+        elif row[1] == 6:
+            data_commande += ["Demande d'accès à la base de données en cours ..."] 
+            commande += ["diag.ping"]
+            first_cmd = False
+        #Commande de reinitialisé l'invite de commande     
+        elif row[1] == 7:
+            cursor.execute("""DELETE FROM demandecommande""")
+            first_cmd = True
+        else:
+            data_commande += ["Attention la commande écrite ne peut pas être exécuté"]
+        i = i + 1
+    #Récupération de la denière commande pour enlevez les autres lignes de la réponse
+    cursor.execute("""SELECT COUNT(*) from demandecommande""")
+    nb_commande = cursor.fetchall()
+    #Récupération du nombre de ligne de la denière commande
+    nbligne = 0
+    if first_cmd == False:
+        cursor.execute("""SELECT * from demandecommande
+                        WHERE iddemandecommande = (SELECT MAX(iddemandecommande) FROM demandecommande)""")
+        last_commande = cursor.fetchall()  
+        if last_commande[0][1] == 1:
+            cursor.execute("""SELECT COUNT(Commande) from commande
+                            WHERE idCommande <> 1""")
+            nbligne = cursor.fetchall()
+        #liste de toutes les tables
+        elif last_commande[0][1] == 2:
+            cursor.execute("""SELECT COUNT(name) from sqlite_master
+                            WHERE type='table' """)
+            nbligne = cursor.fetchall()
+        #liste de toutes les tables et vues de la database
+        elif last_commande[0][1] == 3:
+            cursor.execute("""SELECT COUNT(*) from sqlite_master""")
+            nbligne = cursor.fetchall()
+        #données statistique de toutes les tables
+        elif last_commande[0][1] == 4:
+            cursor.execute("""SELECT COUNT(*) from sqlite_stat1""")
+            nbligne = cursor.fetchall()
+        #liste de chaque dernière demande faites dans chaques table
+        elif last_commande[0][1] == 5:
+            cursor.execute("""SELECT COUNT(*) from sqlite_sequence""")
+            nbligne = cursor.fetchall()
+    #Fermeture de la database
+    conn.commit()
+    conn.close()
+    print(commande)
+    #Renvoie de la page d'accès au terminal
+    return render_template("terminal.html",
+                            form = Form, nb_commande = nb_commande[0][0],
+                            data_commande = data_commande, commande = commande,
+                            first_cmd = first_cmd, nb_resultat = nb_resultat,
+                            last_request_ligne = nbligne,
+                            idGroup = session['user']['idGroup'])
+
+@app.route('/commande', methods=['get', 'post'])
+def commande():
+    #Formulaire
+    form = FormCommandTerm()
+    #Connexion à la database
+    conn = sql.connect('database.db')
+    cursor = conn.cursor()
+    #Récupération de la commande écrite par l'administrateur
+    texte = form.commande.data
+    if (texte == "help"):
+        #Envoyer toutes les commande spéciales non lié a la base de données
+        cursor.execute("""INSERT INTO demandecommande(idCommande) VALUES(1)""")
+    #Affichage de seulement les tables
+    elif (texte == "table"):
+        cursor.execute("""INSERT INTO demandecommande(idCommande) VALUES(2)""")
+    #Affichage de toutels les tables
+    elif (texte == "all table"):
+        cursor.execute("""INSERT INTO demandecommande(idCommande) VALUES(3)""")
+    #Affichage des statistiques de toutes les tables
+    elif (texte == "data table"):
+        cursor.execute("""INSERT INTO demandecommande(idCommande) VALUES(4)""")
+    #Affichage des dernière modifications dans chaque table
+    elif (texte == "last sequence"):
+        cursor.execute("""INSERT INTO demandecommande(idCommande) VALUES(5)""")
+    elif (texte == "ping"):
+        cursor.execute("""INSERT INTO demandecommande(idCommande) VALUES(6)""")
+    elif (texte == "cls"):
+        cursor.execute("""INSERT INTO demandecommande(idCommande) VALUES(7)""")
+    #Fermeture de la database
+    conn.commit()
+    conn.close()
+    #Renvoi de la page terminal
+    return redirect(url_for('terminal'))
+
+#-----------------------------------------
+#-------------Erreur Application----------
+#-----------------------------------------
+@app.errorhandler(400)
+def bad_request(error):
+    return render_template('badrequest.html'), 400
+
+@app.errorhandler(401)
+def Unauthorized(error):
+    return render_template('Unauthorized.html'), 401
+
+@app.errorhandler(402)
+def payement_required(error):
+    return render_template('Payment_Required.html'), 402
+
+@app.errorhandler(403)
+def Forbidden(error):
+    return render_template('Forbidden.html'), 403
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('error.html'), 404
+
+
 #-----------------------------------------
 #----------Lancement de l'application-----
 #-----------------------------------------
