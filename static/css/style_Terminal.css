@@ -1,0 +1,76 @@
+.home .zone-commande .bandeau {
+    display: block;
+    margin: 30px 20px 50px 30px;
+    height: 100px;
+    background-color: var(--primary-color-light);
+    color: var(--text-color);
+    border-radius: 10px;
+    box-shadow: -11px 11px 1px rgb(0 0 0 / 30%);
+    text-align: center;
+}
+
+.home .zone-commande .bandeau h1 {
+    padding-top: 30px;
+}
+
+.home .zone-commande .term {
+    display: block;
+    align-items: center;
+    justify-items: center;
+    margin: 90px  60px 0 60px;
+}
+
+.home .zone-commande .term .terminal {
+    height: calc(100vh - 280px);
+    overflow: scroll;
+    overflow-x: hidden;
+    padding: 0;
+    background: #222;
+    color: #fff;
+    border: 1px black solid;
+    font-family: Consolas, sans-serif;
+    font-size: 13px;
+    line-height: 1.428;
+    border-radius: 5px 5px 0 0;
+}
+
+.home .zone-commande .term .terminal p {
+    margin: 0;
+    padding: 7px 6px;
+}
+
+.home .zone-commande .term .terminal p .console {
+    color: #0FF;
+}
+
+.home .zone-commande .term .terminal p .commande {
+    color: #FF0;
+}
+
+.home .zone-commande .term .terminal p .reponse {
+    color: #fff;
+}
+
+.home .zone-commande .term .terminal p span::selection {
+    color: #fff;
+    background-color: #4169E1;
+}
+
+.home .zone-commande .term .terminal p span::-moz-selection {
+    color: #fff;
+    background-color: #4169E1;
+}
+
+.home .zone-commande .term #term {
+    background: #444;
+    color: #FF0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    border: 1px #222 solid;
+    font-size: 13px;
+    line-height: inherit;
+    margin: 0;
+    font: inherit;
+    border-radius: 0 0 10px 10px;
+}
