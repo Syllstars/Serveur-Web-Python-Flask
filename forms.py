@@ -2,6 +2,7 @@ from random import choices
 from secrets import choice
 from tokenize import String
 from types import MethodDescriptorType
+from wsgiref.validate import validator
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import StringField, EmailField, PasswordField, SubmitField, BooleanField, DateField, TextAreaField, SelectField
@@ -12,6 +13,8 @@ datatype = ["--Choose a type--",
             "char", "unsigned char", "short int", "unsigned short int", "int", "unsigned int", "long int", "unsigned long int",
             "float", "double", "long double", "bool"
             ]
+
+notiftype = ["Général", "Information"]
 
 class RegisterForm(FlaskForm):
     email = EmailField('Email', validators = [DataRequired(), Email()])
@@ -34,6 +37,7 @@ class NewClassGenerator(FlaskForm):
     name = StringField('Name', validators = [DataRequired()])
     class_mere = StringField('Classe Mere')
     specialiter = StringField('spécialité')
+    Image = FileField('New Image profil', validators = [FileAllowed(['jpg', 'png'], 'Images only!')])
     Protect_head = BooleanField('Protecteur du header')
     Generat_head_default_construct = BooleanField('Generer un constructeur par default')
     Generat_head_destruct = BooleanField('Generer un destructeur')
@@ -216,3 +220,11 @@ class FormChangUserProfilImg(FlaskForm):
     Image = FileField('New Image profil', validators = [FileRequired(), FileAllowed(['jpg', 'png'], 'Images only!')])
     recaptcha = RecaptchaField()
     submit = SubmitField("Envoyer")
+
+class FormNewNotif(FlaskForm):
+    type = SelectField('type de commentaire', choices=notiftype)
+    commentaire = TextAreaField('Commentaire a écrire', validators = [DataRequired()])
+    submit = SubmitField('envoyer le commentaire')
+
+class FormCommandTerm(FlaskForm):
+    commande = StringField('Commande pour la base de données', validators = [DataRequired()])
