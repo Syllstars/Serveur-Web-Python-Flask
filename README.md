@@ -74,7 +74,9 @@ If the app as run correctly, on the internet, select this address:
 **https://127.0.0.1:5000**
 
 >  WARNING : You cannot access to the web site if you have not validated your account with the link on your email.
+
 > WARNING : If the database as empty delete the "database.db" file, after this execute the file "admin.py", and restart the server web.
+
 > WARNING : If you want to access to the database by the web site, you must log in with an admin account, 
 		  for this you can check the database or the file admin.py and take the admin account.
 
