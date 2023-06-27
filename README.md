@@ -1,8 +1,10 @@
-# +-------------------------------------------------------+
-# |			       MMOGC -- Générateur de classe	            |
-# |				          Application Flask	                    |
-# |	      	       by PONTLEVOY Maxime			              |
-# +-------------------------------------------------------+
+# MMOGC -- Générateur de classe
+ 
+ +-------------------------------------------------------+
+ |		 MMOGC -- Générateur de classe	         |
+ |		       Application Flask	         |
+ |	      	      by PONTLEVOY Maxime		 |
+ +-------------------------------------------------------+
 
 ## == Implémentation ==
 
@@ -76,8 +78,3 @@ If the app as run correctly, on the internet, select this address:
 > WARNING : If you want to access to the database by the web site, you must log in with an admin account, 
 		  for this you can check the database or the file admin.py and take the admin account.
 
-+-------------------------------------------------------+
-|		        Server Web for Class C++ creation	          |
-|		          Develop on Visual Studio 2019	            |
-|	      	       Version 8.0 07/06/2022		              |
-+-------------------------------------------------------+
