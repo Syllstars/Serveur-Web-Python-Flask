@@ -1,10 +1,10 @@
 # MMOGC -- Générateur de classe
  
- +-------------------------------------------------------+
- |		 MMOGC -- Générateur de classe	         |
- |		       Application Flask	         |
- |	      	      by PONTLEVOY Maxime		 |
- +-------------------------------------------------------+
+ +-------------------------------------------------------+ \
+ |		 MMOGC -- Générateur de classe	         | \
+ |		       Application Flask	         | \
+ |	      	      by PONTLEVOY Maxime		 | \
+ +-------------------------------------------------------+ \
 
 ## == Implémentation ==
 
